@@ -1,0 +1,13 @@
+on: [push, pull_request]
+name: Cargo build
+env:
+  CARGO_TERM_COLORS: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: cargo build --verbose
