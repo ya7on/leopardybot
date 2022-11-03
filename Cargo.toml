@@ -1,0 +1,22 @@
+[package]
+name = "leopardybot"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-rt = "2.7.0"
+actix-web = "4.2.1"
+chrono = "0.4.22"
+clap = { version = "4.0.14", features = ["derive", "env"] }
+env_logger = "0.9.1"
+lazy_static = "1.4.0"
+log = "0.4.17"
+migration = { path = "migration" }
+reqwest = { version = "0.11.12", features = ["json"] }
+regex = "1.6.0"
+sea-orm = { version = "0.9.3", features = ["runtime-actix-native-tls", "sqlx-postgres"] }
+serde = { version = "1.0.145", features = ["derive"] }
+serde_json = "1.0.87"
+thiserror = "1.0.37"
