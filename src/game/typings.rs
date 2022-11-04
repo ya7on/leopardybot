@@ -1,5 +1,5 @@
 pub struct QuizPollOption {
-    pub id: i32,
+    pub is_correct: bool,
     pub text: String,
 }
 

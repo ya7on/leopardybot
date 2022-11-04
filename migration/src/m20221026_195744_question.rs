@@ -10,62 +10,29 @@ impl MigrationTrait for Migration {
         manager
             .create_table(
                 Table::create()
-                    .table(Question::Table)
+                    .table(Quiz::Table)
                     .if_not_exists()
                     .col(
-                        ColumnDef::new(Question::Id)
+                        ColumnDef::new(Quiz::Id)
                             .integer()
                             .not_null()
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Question::Text).string().not_null())
+                    .col(ColumnDef::new(Quiz::Text).string().not_null().unique_key())
+                    .col(ColumnDef::new(Quiz::CorrectOption).string().not_null())
+                    .col(ColumnDef::new(Quiz::Option2).string().not_null())
+                    .col(ColumnDef::new(Quiz::Option3).string().not_null())
+                    .col(ColumnDef::new(Quiz::Option4).string().not_null())
                     .to_owned(),
             )
-            .await?;
-        manager
-            .create_table(
-                Table::create()
-                    .table(QuestionOption::Table)
-                    .if_not_exists()
-                    .col(
-                        ColumnDef::new(QuestionOption::Id)
-                            .integer()
-                            .not_null()
-                            .auto_increment()
-                            .primary_key(),
-                    )
-                    .col(
-                        ColumnDef::new(QuestionOption::QuestionId)
-                            .integer()
-                            .not_null(),
-                    )
-                    .foreign_key(
-                        ForeignKey::create()
-                            .name("fk-option-to-question")
-                            .from(QuestionOption::Table, QuestionOption::QuestionId)
-                            .to(Question::Table, Question::Id)
-                            .on_delete(ForeignKeyAction::Cascade),
-                    )
-                    .col(ColumnDef::new(QuestionOption::Text).string().not_null())
-                    .col(
-                        ColumnDef::new(QuestionOption::IsCorrect)
-                            .boolean()
-                            .default(false),
-                    )
-                    .to_owned(),
-            )
-            .await?;
-        Ok(())
+            .await
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         // Replace the sample below with your own migration scripts
         manager
-            .drop_table(Table::drop().table(Question::Table).to_owned())
-            .await?;
-        manager
-            .drop_table(Table::drop().table(QuestionOption::Table).to_owned())
+            .drop_table(Table::drop().table(Quiz::Table).to_owned())
             .await?;
         Ok(())
     }
@@ -73,17 +40,12 @@ impl MigrationTrait for Migration {
 
 /// Learn more at https://docs.rs/sea-query#iden
 #[derive(Iden)]
-enum Question {
+enum Quiz {
     Table,
     Id,
     Text,
-}
-
-#[derive(Iden)]
-enum QuestionOption {
-    Table,
-    Id,
-    QuestionId,
-    Text,
-    IsCorrect,
+    CorrectOption,
+    Option2,
+    Option3,
+    Option4,
 }
