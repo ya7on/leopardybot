@@ -6,6 +6,5 @@ pub mod chat;
 pub mod game;
 pub mod player;
 pub mod poll;
-pub mod question;
-pub mod question_option;
+pub mod quiz;
 pub mod sea_orm_active_enums;

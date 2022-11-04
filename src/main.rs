@@ -36,10 +36,9 @@ async fn main() -> std::io::Result<()> {
                 for poll in polls.iter() {
                     let game = GameHandler::get_by_id(&db, poll.game_id as usize).await?;
                     let chat_id = game.model.chat_id;
-                    &client
-                        .send_message(chat_id as isize, &"Hello world".to_string())
+                    client
+                        .send_message(chat_id as isize, &"Раунд завершен".to_string())
                         .await?;
-                    GameHandler::mark_poll_as_handled(&db, poll.id.clone()).await?;
                     let question = GameHandler::get_question(&db).await?;
                     let response = client
                         .send_quiz(
@@ -53,6 +52,7 @@ async fn main() -> std::io::Result<()> {
                         // FIXME error handle
                         Error::SerializationError(format!("Empty result field"))
                     })?;
+                    GameHandler::mark_poll_as_handled(&db, poll.id.clone()).await?;
                     let poll = result
                         .poll
                         .ok_or_else(|| Error::SerializationError(format!("Empty poll field")))?;

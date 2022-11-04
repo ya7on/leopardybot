@@ -3,23 +3,19 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
-#[sea_orm(table_name = "question")]
+#[sea_orm(table_name = "quiz")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
+    #[sea_orm(unique)]
     pub text: String,
+    pub correct_option: String,
+    pub option2: String,
+    pub option3: String,
+    pub option4: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {
-    #[sea_orm(has_many = "super::question_option::Entity")]
-    QuestionOption,
-}
-
-impl Related<super::question_option::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::QuestionOption.def()
-    }
-}
+pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
