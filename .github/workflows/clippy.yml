@@ -4,7 +4,7 @@ env:
   CARGO_TERM_COLORS: always
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
 
     steps:
