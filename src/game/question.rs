@@ -3,12 +3,8 @@ use crate::error::{Error, Result};
 use crate::game::base::GameHandler;
 use crate::game::typings::{QuizPoll, QuizPollOption};
 use rand::seq::SliceRandom;
-use sea_orm::sea_query::ConditionExpression::SimpleExpr;
 use sea_orm::sea_query::{Expr, Query};
-use sea_orm::{
-    ColumnTrait, Condition, ConnectionTrait, DatabaseConnection, EntityTrait, IntoSimpleExpr,
-    Order, QueryFilter,
-};
+use sea_orm::{ColumnTrait, Condition, DatabaseConnection, EntityTrait, Order, QueryFilter};
 
 impl GameHandler {
     /// TODO FIXME удалить, когда будет реализован другой метод
@@ -59,7 +55,7 @@ impl GameHandler {
 
         Ok(QuizPoll {
             id: quiz.id,
-            text: quiz.text.clone(),
+            text: quiz.text,
             options,
             correct_answer_id,
         })

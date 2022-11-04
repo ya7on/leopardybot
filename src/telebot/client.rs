@@ -19,9 +19,9 @@ pub struct Client {
 }
 
 impl Client {
-    pub async fn new(token: &String, url: &String) -> Result<Self> {
+    pub async fn new(token: &str, url: &String) -> Result<Self> {
         let c = Self {
-            token: token.clone(),
+            token: token.to_owned(),
             client: reqwest::Client::new(),
         };
 
@@ -68,11 +68,8 @@ impl Client {
         response
     }
 
-    pub(crate) async fn set_webhook_info(
-        &self,
-        url: &String,
-    ) -> Result<JsonResponse<Option<bool>>> {
-        let response = self.execute("setWebhook", &[("url", url.clone())]).await;
+    pub(crate) async fn set_webhook_info(&self, url: &str) -> Result<JsonResponse<Option<bool>>> {
+        let response = self.execute("setWebhook", &[("url", url.to_owned())]).await;
         debug!("set_webhook_info: {:?}", response);
         response
     }

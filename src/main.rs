@@ -50,12 +50,12 @@ async fn main() -> std::io::Result<()> {
                         .await?;
                     let result = response.result.ok_or_else(|| {
                         // FIXME error handle
-                        Error::SerializationError(format!("Empty result field"))
+                        Error::SerializationError("Empty result field".to_string())
                     })?;
                     GameHandler::mark_poll_as_handled(&db, poll.id.clone()).await?;
                     let poll = result
                         .poll
-                        .ok_or_else(|| Error::SerializationError(format!("Empty poll field")))?;
+                        .ok_or_else(|| Error::SerializationError("Empty poll field".to_string()))?;
                     game.register_poll(&db, &poll).await?;
                 }
                 Ok(())
@@ -72,13 +72,11 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .service(web::resource("/api/v1/telegram").to(handler))
             .data_factory(|| async {
-                Ok::<Client, Error>(
-                    Client::new(
-                        &c.telegram_token,
-                        &format!("https://{}/api/v1/telegram", &c.host),
-                    )
-                    .await?,
+                Client::new(
+                    &c.telegram_token,
+                    &format!("https://{}/api/v1/telegram", &c.host),
                 )
+                .await
             })
             .data_factory(|| async {
                 info!("Connection to Database");
