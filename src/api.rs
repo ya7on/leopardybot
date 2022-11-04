@@ -10,7 +10,7 @@ use sea_orm::DatabaseConnection;
 
 const HELP_MESSAGE: &str = r#"HELP MESSAGE"#; // TODO
 
-fn parse_command(text: &String) -> Result<Option<String>> {
+fn parse_command(text: &str) -> Result<Option<String>> {
     let re = Regex::new(r"(/[a-zA-Z0-9_]+)(@.+)?")
         .map_err(|err| Error::SerializationError(format!("Invalid regex. {}", err)))?;
     Ok(re.captures(text).map(|c| c[1].to_string()))
@@ -40,7 +40,7 @@ async fn handle_message(
                     // FIXME
                     if !GameHandler::exists(db, message.chat.id).await? {
                         let game = GameHandler::create(db, message.chat.id).await?;
-                        let question = GameHandler::get_question(&db).await?;
+                        let question = GameHandler::get_question(db).await?;
                         let response = client
                             .send_quiz(
                                 message.chat.id,
@@ -51,10 +51,10 @@ async fn handle_message(
                             .await?;
                         let result = response.result.ok_or_else(|| {
                             // FIXME error handle
-                            Error::SerializationError(format!("Empty result field"))
+                            Error::SerializationError("Empty result field".to_owned())
                         })?;
                         let poll = result.poll.ok_or_else(|| {
-                            Error::SerializationError(format!("Empty poll field"))
+                            Error::SerializationError("Empty poll field".to_owned())
                         })?;
                         game.register_poll(db, &poll).await?;
                     }

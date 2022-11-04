@@ -33,7 +33,7 @@ impl GameHandler {
 
     pub async fn get_unhandled_polls(db: &DatabaseConnection) -> Result<Vec<poll::Model>> {
         let now = Utc::now().timestamp();
-        Ok(<poll::Entity as EntityTrait>::find()
+        <poll::Entity as EntityTrait>::find()
             .filter(
                 Condition::all()
                     .add(<poll::Entity as EntityTrait>::Column::CloseDate.lt(now))
@@ -41,7 +41,7 @@ impl GameHandler {
             )
             .all(db)
             .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot fetch polls. {}", err)))?)
+            .map_err(|err| Error::DatabaseError(format!("Cannot fetch polls. {}", err)))
     }
 
     pub async fn mark_poll_as_handled(db: &DatabaseConnection, poll_id: String) -> Result<()> {

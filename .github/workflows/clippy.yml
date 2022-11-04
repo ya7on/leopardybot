@@ -1,0 +1,15 @@
+on: [push, pull_request]
+name: Cargo clippy
+env:
+  CARGO_TERM_COLORS: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install clippy
+        run: rustup component add clippy
+      - name: Clippy
+        run: cargo clippy
