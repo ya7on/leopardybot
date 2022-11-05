@@ -3,11 +3,7 @@ use crate::error::{Error, Result};
 use crate::game::base::GameHandler;
 use crate::game::typings::{QuizPoll, QuizPollOption};
 use rand::seq::SliceRandom;
-use sea_orm::sea_query::Table;
-use sea_orm::{
-    ColumnTrait, Condition, ConnectionTrait, DatabaseConnection, DbBackend, EntityTrait, Iden,
-    Order, OrderedStatement, QueryFilter, Statement,
-};
+use sea_orm::{ConnectionTrait, DatabaseConnection, EntityTrait, Statement};
 
 impl GameHandler {
     /// TODO FIXME удалить, когда будет реализован другой метод
