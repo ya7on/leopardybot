@@ -5,6 +5,7 @@ mod m20221026_195744_question;
 mod m20221030_183111_chat;
 mod m20221030_193210_game;
 mod m20221031_205134_poll;
+mod m20221105_213042_user_poll_answer;
 
 pub struct Migrator;
 
@@ -17,6 +18,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20221030_183111_chat::Migration),
             Box::new(m20221030_193210_game::Migration),
             Box::new(m20221031_205134_poll::Migration),
+            Box::new(m20221105_213042_user_poll_answer::Migration),
         ]
     }
 }
