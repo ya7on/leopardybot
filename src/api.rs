@@ -29,7 +29,6 @@ async fn handle_message(
 
     if let Some(text) = &message.text {
         if let Some(command) = parse_command(text)? {
-            println!("{:?}", command);
             match command.as_str() {
                 "/help" => {
                     client

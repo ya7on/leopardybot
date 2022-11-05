@@ -10,4 +10,6 @@ pub enum Error {
     DatabaseError(String),
     #[error("Serialization error. {0}")]
     SerializationError(String),
+    #[error("Uncategorized error. {0}")]
+    UncategorizedError(String),
 }

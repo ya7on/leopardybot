@@ -13,6 +13,7 @@ pub struct JsonResponse<R> {
     pub description: Option<String>,
 }
 
+#[derive(Clone)]
 pub struct Client {
     token: String,
     client: reqwest::Client,
