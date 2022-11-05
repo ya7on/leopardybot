@@ -1,6 +1,7 @@
 use crate::entities::game;
 use crate::entities::sea_orm_active_enums::Gamemodes;
 use crate::error::{Error, Result};
+use migration::Expr;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, EntityTrait, PaginatorTrait,
     QueryFilter, Set,
@@ -67,6 +68,22 @@ impl GameHandler {
             })?;
 
         Ok(Self { model: g })
+    }
+
+    pub async fn end_game(&self, db: &DatabaseConnection) -> Result<()> {
+        <game::Entity as EntityTrait>::update_many()
+            .filter(
+                Condition::all()
+                    .add(<game::Entity as EntityTrait>::Column::Id.eq(self.model.id as i32)),
+            )
+            .col_expr(
+                <game::Entity as EntityTrait>::Column::Active,
+                Expr::value(false),
+            )
+            .exec(db)
+            .await
+            .map_err(|err| Error::DatabaseError(format!("Cannot update game. {}", err)))?;
+        Ok(())
     }
 
     // /// TODO Find question that users haven't player before

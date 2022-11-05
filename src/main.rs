@@ -5,18 +5,61 @@ use actix_rt::time;
 use actix_web::{middleware, web, App, HttpServer};
 use leopardybot::api::handler;
 use leopardybot::conf::get_config;
+use leopardybot::entities::quiz;
 use leopardybot::error::{Error, Result};
 use leopardybot::game::base::GameHandler;
 use leopardybot::telebot::client::Client;
 use migration::{Migrator, MigratorTrait};
-use sea_orm::{ConnectOptions, Database, DatabaseConnection};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection, Set};
+use serde::Deserialize;
 use std::time::Duration;
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct CsvQuizRow {
+    question: String,
+    correct_answer: String,
+    answer_2: String,
+    answer_3: String,
+    answer_4: String,
+}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    env_logger::init();
+    env_logger::Builder::from_default_env()
+        .filter_module("sqlx::query", log::LevelFilter::Error)
+        .init();
 
     let c = get_config();
+
+    info!("Seeding questions");
+    let opt = ConnectOptions::new(c.db.clone());
+    let db = Database::connect(opt).await.unwrap(); // TODO clone
+
+    let file = std::fs::File::open("questions/questions.csv").unwrap();
+    let mut reader = csv::ReaderBuilder::new()
+        .has_headers(true)
+        .delimiter(b';')
+        .from_reader(file);
+    let mut questions = Vec::new();
+    for record in reader.deserialize::<CsvQuizRow>() {
+        let record = record.unwrap();
+        questions.push(quiz::ActiveModel {
+            text: Set(record.question),
+            correct_option: Set(record.correct_answer),
+            option2: Set(record.answer_2),
+            option3: Set(record.answer_3),
+            option4: Set(record.answer_4),
+            ..Default::default()
+        })
+    }
+    GameHandler::clear_question(&db).await.unwrap();
+    for to_insert in questions.chunks(100) {
+        GameHandler::insert_questions(&db, to_insert.to_vec())
+            .await
+            .unwrap();
+    }
+    info!("Seeding questions is done");
 
     actix_rt::spawn(async {
         let opt = ConnectOptions::new(c.db.clone());
@@ -36,6 +79,15 @@ async fn main() -> std::io::Result<()> {
                 for poll in polls.iter() {
                     let game = GameHandler::get_by_id(&db, poll.game_id as usize).await?;
                     let chat_id = game.model.chat_id;
+                    if game.get_rounds(&db).await? > 5 {
+                        // TODO вынести в настройку
+                        client
+                            .send_message(chat_id as isize, &"Игра завершена".to_string())
+                            .await?;
+                        game.end_game(&db).await?;
+                        GameHandler::mark_poll_as_handled(&db, poll.id.clone()).await?;
+                        return Ok(());
+                    }
                     client
                         .send_message(chat_id as isize, &"Раунд завершен".to_string())
                         .await?;

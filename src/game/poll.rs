@@ -5,7 +5,8 @@ use crate::telebot::typings::output::Poll;
 use chrono::Utc;
 use sea_orm::sea_query::Expr;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, EntityTrait, QueryFilter, Set,
+    ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, EntityTrait, PaginatorTrait,
+    QueryFilter, Set,
 };
 
 impl GameHandler {
@@ -55,5 +56,16 @@ impl GameHandler {
             .await
             .map_err(|err| Error::DatabaseError(format!("Cannot update poll. {}", err)))?;
         Ok(())
+    }
+
+    pub async fn get_rounds(&self, db: &DatabaseConnection) -> Result<usize> {
+        <poll::Entity as EntityTrait>::find()
+            .filter(
+                Condition::all()
+                    .add(<poll::Entity as EntityTrait>::Column::GameId.eq(self.model.id)),
+            )
+            .count(db)
+            .await
+            .map_err(|err| Error::DatabaseError(format!("Cannot update poll. {}", err)))
     }
 }

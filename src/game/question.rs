@@ -3,21 +3,15 @@ use crate::error::{Error, Result};
 use crate::game::base::GameHandler;
 use crate::game::typings::{QuizPoll, QuizPollOption};
 use rand::seq::SliceRandom;
-use sea_orm::sea_query::{Expr, Query};
-use sea_orm::{ColumnTrait, Condition, DatabaseConnection, EntityTrait, Order, QueryFilter};
+use sea_orm::{ConnectionTrait, DatabaseConnection, EntityTrait, Statement};
 
 impl GameHandler {
     /// TODO FIXME удалить, когда будет реализован другой метод
     pub async fn get_question(db: &DatabaseConnection) -> Result<QuizPoll> {
-        let stmt = Query::select()
-            .from(quiz::Entity)
-            .column(<quiz::Entity as EntityTrait>::Column::Id)
-            .order_by_expr(Expr::cust("RANDOM()"), Order::Asc)
-            .to_owned();
+        let sql = "SELECT * FROM public.quiz ORDER BY RANDOM() LIMIT 1;";
+        let stmt = Statement::from_sql_and_values(db.get_database_backend(), sql, vec![]);
         let quiz = <quiz::Entity as EntityTrait>::find()
-            .filter(
-                Condition::all().add(<quiz::Entity as EntityTrait>::Column::Id.in_subquery(stmt)),
-            )
+            .from_raw_sql(stmt)
             .one(db)
             .await
             .map_err(|err| {
@@ -59,5 +53,24 @@ impl GameHandler {
             options,
             correct_answer_id,
         })
+    }
+
+    pub async fn clear_question(db: &DatabaseConnection) -> Result<()> {
+        <quiz::Entity as EntityTrait>::delete_many()
+            .exec(db)
+            .await
+            .map_err(|err| Error::DatabaseError(format!("Cannot delete quiz. {}", err)))?;
+        Ok(())
+    }
+
+    pub async fn insert_questions(
+        db: &DatabaseConnection,
+        records: Vec<quiz::ActiveModel>,
+    ) -> Result<()> {
+        <quiz::Entity as EntityTrait>::insert_many(records)
+            .exec(db)
+            .await
+            .map_err(|err| Error::DatabaseError(format!("Cannot insert quiz. {}", err)))?;
+        Ok(())
     }
 }
