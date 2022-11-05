@@ -12,8 +12,8 @@ pub async fn run(db: DatabaseConnection, client: Client) -> std::io::Result<()> 
         App::new()
             .wrap(middleware::Logger::default())
             .service(web::resource("/api/v1/telegram").to(handler))
-            .app_data(client.clone())
-            .app_data(clone_db(&db).unwrap())
+            .app_data(web::Data::new(client.clone()))
+            .app_data(web::Data::new(clone_db(&db).unwrap()))
     })
     .bind(("0.0.0.0", c.port))?
     .workers(c.workers)
