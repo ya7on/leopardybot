@@ -21,7 +21,12 @@ pub struct Client {
 }
 
 impl Client {
-    pub async fn new(token: &str, url: &String, secret_token: Option<&String>) -> Result<Self> {
+    pub async fn new(
+        token: &str,
+        url: &String,
+        secret_token: Option<&String>,
+        max_connection: u8,
+    ) -> Result<Self> {
         let c = Self {
             token: token.to_owned(),
             client: reqwest::Client::new(),
@@ -31,7 +36,7 @@ impl Client {
         };
 
         info!("Updating telegram webhook url to {}", &url);
-        c.set_webhook_info(url).await?;
+        c.set_webhook_info(url, max_connection).await?;
 
         Ok(c)
     }
@@ -74,13 +79,18 @@ impl Client {
     //     response
     // }
 
-    pub(crate) async fn set_webhook_info(&self, url: &str) -> Result<JsonResponse<Option<bool>>> {
+    pub(crate) async fn set_webhook_info(
+        &self,
+        url: &str,
+        max_connections: u8,
+    ) -> Result<JsonResponse<Option<bool>>> {
         let response = self
             .execute(
                 "setWebhook",
                 &[
                     ("url", url.to_owned()),
                     ("secret_token", self.secret_token.to_owned()),
+                    ("max_connections", max_connections.to_string()),
                 ],
             )
             .await;
