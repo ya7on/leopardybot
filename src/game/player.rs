@@ -1,14 +1,13 @@
 use crate::entities::player;
 use crate::error::{Error, Result};
 use crate::game::base::GameHandler;
-use sea_orm::sea_query::Expr;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, EntityTrait, QueryFilter, Set,
     TransactionTrait,
 };
 
 impl GameHandler {
-    async fn get_or_create_player(db: &DatabaseConnection, id: isize) -> Result<player::Model> {
+    pub async fn get_or_create_player(db: &DatabaseConnection, id: isize) -> Result<player::Model> {
         if let Some(player) = <player::Entity as EntityTrait>::find()
             .filter(
                 Condition::all()
@@ -30,7 +29,7 @@ impl GameHandler {
         }
     }
 
-    async fn increase_player_score(
+    pub async fn increase_player_score(
         db: &DatabaseConnection,
         player_id: isize,
         score: isize,
@@ -39,7 +38,7 @@ impl GameHandler {
             .begin()
             .await
             .map_err(|err| Error::DatabaseError(format!("Cannot begin transaction. {}", err)))?;
-        let mut player = <player::Entity as EntityTrait>::find()
+        let player = <player::Entity as EntityTrait>::find()
             .filter(
                 Condition::all()
                     .add(<player::Entity as EntityTrait>::Column::TelegramId.eq(player_id as i32)),

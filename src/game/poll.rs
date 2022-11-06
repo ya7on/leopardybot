@@ -68,4 +68,13 @@ impl GameHandler {
             .await
             .map_err(|err| Error::DatabaseError(format!("Cannot update poll. {}", err)))
     }
+
+    pub async fn get_poll(db: &DatabaseConnection, poll_id: String) -> Result<poll::Model> {
+        <poll::Entity as EntityTrait>::find()
+            .filter(Condition::all().add(<poll::Entity as EntityTrait>::Column::Id.eq(poll_id)))
+            .one(db)
+            .await
+            .map_err(|err| Error::DatabaseError(format!("Cannot update poll. {}", err)))?
+            .ok_or_else(|| Error::DatabaseError("Cannot find poll".to_string()))
+    }
 }

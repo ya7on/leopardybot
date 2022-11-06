@@ -4,7 +4,7 @@ use crate::game::base::GameHandler;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
 
 impl GameHandler {
-    async fn add_user_poll_answer(
+    pub async fn add_user_poll_answer(
         db: &DatabaseConnection,
         user_id: isize,
         poll_id: String,
