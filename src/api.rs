@@ -1,14 +1,14 @@
+use crate::conf::get_config;
 use crate::error::{Error, Result};
 use crate::game::base::GameHandler;
 use crate::telebot::client::Client;
 use crate::telebot::typings::input::Update;
 use crate::telebot::typings::output::{Message, PollAnswer};
+use crate::texts::TextFormatter;
 use actix_web::web::Json;
 use actix_web::{web, HttpResponse};
 use regex::Regex;
 use sea_orm::DatabaseConnection;
-
-const HELP_MESSAGE: &str = r#"HELP MESSAGE"#; // TODO
 
 fn parse_command(text: &str) -> Result<Option<String>> {
     let re = Regex::new(r"(/[a-zA-Z0-9_]+)(@.+)?")
@@ -21,9 +21,11 @@ async fn handle_message(
     db: &web::Data<DatabaseConnection>,
     message: &Message,
 ) -> Result<()> {
+    let c = get_config();
+
     if GameHandler::register_chat(db, message.chat.id).await? {
         client
-            .send_message(message.chat.id, &"СООБЩЕНИЕ ДЛЯ НОВЫХ ЧАТОВ".to_string())
+            .send_message(message.chat.id, &TextFormatter::new_chat()?)
             .await?;
     }
 
@@ -32,14 +34,15 @@ async fn handle_message(
             match command.as_str() {
                 "/help" => {
                     client
-                        .send_message(message.chat.id, &HELP_MESSAGE.to_string())
+                        .send_message(message.chat.id, &TextFormatter::help()?)
                         .await?;
                 }
                 "/play" => {
                     // FIXME
                     if !GameHandler::exists(db, message.chat.id).await? {
                         let game = GameHandler::create(db, message.chat.id).await?;
-                        let question = GameHandler::get_question(db).await?;
+                        let mut question = GameHandler::get_question(db).await?;
+                        question.text = format!("[1/{}] {}", c.quiz_rounds_count, question.text);
                         let response = client
                             .send_quiz(
                                 message.chat.id,
@@ -66,13 +69,12 @@ async fn handle_message(
 }
 
 async fn handle_poll_answer(
-    client: &web::Data<Client>,
+    _: &web::Data<Client>,
     db: &web::Data<DatabaseConnection>,
     poll_answer: &PollAnswer,
 ) -> Result<()> {
     let player = GameHandler::get_or_create_player(db, poll_answer.user.id).await?;
     let poll = GameHandler::get_poll(db, poll_answer.poll_id.clone()).await?;
-    let game = GameHandler::get_by_id(db, poll.game_id as usize).await?;
 
     if poll_answer
         .option_ids
@@ -81,16 +83,8 @@ async fn handle_poll_answer(
         GameHandler::add_user_poll_answer(db, player.telegram_id as isize, poll.id.clone(), true)
             .await?;
         GameHandler::increase_player_score(db, player.telegram_id as isize, 1).await?;
-
-        client
-            .send_message(game.model.chat_id as isize, &"Совершенно верно".to_string())
-            .await?;
     } else {
         GameHandler::add_user_poll_answer(db, player.telegram_id as isize, poll.id.clone(), false)
-            .await?;
-
-        client
-            .send_message(game.model.chat_id as isize, &"Неправильно".to_string())
             .await?;
     };
 

@@ -18,6 +18,7 @@ pub mod game {
 pub mod job;
 pub mod seeder;
 pub mod server;
+pub mod texts;
 pub mod telebot {
     pub mod client;
     pub mod typings;
