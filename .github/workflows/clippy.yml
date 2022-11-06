@@ -1,4 +1,4 @@
-on: [push, pull_request]
+on: push
 name: Cargo clippy
 env:
   CARGO_TERM_COLORS: always
