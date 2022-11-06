@@ -1,4 +1,4 @@
-on: [push, pull_request]
+on: push
 name: Cargo build
 env:
   CARGO_TERM_COLORS: always
