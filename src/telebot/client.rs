@@ -1,9 +1,9 @@
 use crate::conf::get_config;
 use crate::error::{Error, Result};
-use crate::telebot;
 use crate::telebot::typings::output::Message;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
+use uuid::Uuid;
 
 #[derive(Deserialize, Debug)]
 pub struct JsonResponse<R> {
@@ -17,25 +17,30 @@ pub struct JsonResponse<R> {
 pub struct Client {
     token: String,
     client: reqwest::Client,
+    secret_token: String,
 }
 
 impl Client {
-    pub async fn new(token: &str, url: &String) -> Result<Self> {
+    pub async fn new(token: &str, url: &String, secret_token: Option<&String>) -> Result<Self> {
         let c = Self {
             token: token.to_owned(),
             client: reqwest::Client::new(),
+            secret_token: secret_token
+                .map(|token| token.to_owned())
+                .unwrap_or_else(|| Uuid::new_v4().to_string()),
         };
 
-        let webhook_info = c.get_webhook_info().await?;
-        if url != &webhook_info.result.ok_or_else(|| todo!())?.url {
-            info!("Updating telegram webhook url to {}", &url);
-            c.set_webhook_info(url).await?;
-        }
+        info!("Updating telegram webhook url to {}", &url);
+        c.set_webhook_info(url).await?;
 
         Ok(c)
     }
 
-    async fn execute<R: DeserializeOwned>(
+    pub(crate) fn verify_secret_token(&self, token: &str) -> bool {
+        self.secret_token == token
+    }
+
+    pub(super) async fn execute<R: DeserializeOwned>(
         &self,
         method: &str,
         form: &[(&str, String)],
@@ -59,23 +64,31 @@ impl Client {
         })
     }
 
-    pub async fn get_webhook_info(
-        &self,
-    ) -> Result<JsonResponse<telebot::typings::output::WebhookInfo>> {
-        let response = self
-            .execute::<telebot::typings::output::WebhookInfo>("getWebhookInfo", &[])
-            .await;
-        debug!("get_webhook_info: {:?}", response);
-        response
-    }
+    // pub(crate) async fn get_webhook_info(
+    //     &self,
+    // ) -> Result<JsonResponse<telebot::typings::output::WebhookInfo>> {
+    //     let response = self
+    //         .execute::<telebot::typings::output::WebhookInfo>("getWebhookInfo", &[])
+    //         .await;
+    //     debug!("get_webhook_info: {:?}", response);
+    //     response
+    // }
 
     pub(crate) async fn set_webhook_info(&self, url: &str) -> Result<JsonResponse<Option<bool>>> {
-        let response = self.execute("setWebhook", &[("url", url.to_owned())]).await;
+        let response = self
+            .execute(
+                "setWebhook",
+                &[
+                    ("url", url.to_owned()),
+                    ("secret_token", self.secret_token.to_owned()),
+                ],
+            )
+            .await;
         debug!("set_webhook_info: {:?}", response);
         response
     }
 
-    pub async fn send_message(
+    pub(crate) async fn send_message(
         &self,
         chat_id: isize,
         text: &String,
@@ -94,7 +107,7 @@ impl Client {
         response
     }
 
-    pub async fn send_quiz(
+    pub(crate) async fn send_quiz(
         &self,
         chat_id: isize,
         question: &String,

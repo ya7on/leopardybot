@@ -6,14 +6,25 @@ use crate::telebot::typings::input::Update;
 use crate::telebot::typings::output::{Message, PollAnswer};
 use crate::texts::TextFormatter;
 use actix_web::web::Json;
-use actix_web::{web, HttpResponse};
+use actix_web::{web, HttpRequest, HttpResponse};
 use regex::Regex;
 use sea_orm::DatabaseConnection;
+
+const TELEGRAM_SECRET_TOKEN_HEADER: &str = "X-Telegram-Bot-Api-Secret-Token";
 
 fn parse_command(text: &str) -> Result<Option<String>> {
     let re = Regex::new(r"(/[a-zA-Z0-9_]+)(@.+)?")
         .map_err(|err| Error::SerializationError(format!("Invalid regex. {}", err)))?;
     Ok(re.captures(text).map(|c| c[1].to_string()))
+}
+
+fn verify_secret_token(request: HttpRequest, client: &Client) -> bool {
+    if let Some(header) = request.headers().get(TELEGRAM_SECRET_TOKEN_HEADER) {
+        if let Ok(header_value) = header.to_str() {
+            return client.verify_secret_token(header_value);
+        }
+    }
+    false
 }
 
 async fn handle_message(
@@ -100,7 +111,13 @@ pub async fn handler(
     update: Json<Update>,
     db: web::Data<DatabaseConnection>,
     client: web::Data<Client>,
+    request: HttpRequest,
 ) -> HttpResponse {
+    if !verify_secret_token(request, &client) {
+        error!("Invalid secret token");
+        return HttpResponse::Unauthorized().finish();
+    }
+
     match update.into_inner() {
         Update {
             message: Some(message),
