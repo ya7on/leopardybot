@@ -83,7 +83,11 @@ impl Client {
         let response = self
             .execute(
                 "sendMessage",
-                &[("chat_id", chat_id.to_string()), ("text", text.to_string())],
+                &[
+                    ("chat_id", chat_id.to_string()),
+                    ("text", text.to_string()),
+                    ("parse_mode", "html".to_string()),
+                ],
             )
             .await;
         debug!("send_message: {:?}", response);

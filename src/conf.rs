@@ -30,6 +30,13 @@ pub struct Configuration {
         default_value = "15"
     )]
     pub quiz_round_time: usize,
+
+    #[clap(
+        long = "quiz-rounds-count",
+        env = "LEO_QUIZ_ROUNDS_COUNT",
+        default_value = "5"
+    )]
+    pub quiz_rounds_count: usize,
 }
 
 pub fn get_config() -> &'static Configuration {
