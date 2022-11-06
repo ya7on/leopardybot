@@ -29,6 +29,17 @@ impl TextFormatter {
         Ok(writer)
     }
 
+    pub fn start() -> Result<String> {
+        let mut writer = String::new();
+        writeln!(writer, "<b>Привет!</b>")
+            .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
+        writeln!(writer)
+            .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
+        writeln!(writer, "Введи /help чтобы узнать все команды")
+            .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
+        Ok(writer)
+    }
+
     pub fn help() -> Result<String> {
         let mut writer = String::new();
         writeln!(writer, "<b>Квиз бот</b>")

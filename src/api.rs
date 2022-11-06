@@ -32,6 +32,11 @@ async fn handle_message(
     if let Some(text) = &message.text {
         if let Some(command) = parse_command(text)? {
             match command.as_str() {
+                "/start" => {
+                    client
+                        .send_message(message.chat.id, &TextFormatter::start()?)
+                        .await?;
+                }
                 "/help" => {
                     client
                         .send_message(message.chat.id, &TextFormatter::help()?)
