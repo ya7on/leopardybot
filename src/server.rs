@@ -16,7 +16,7 @@ pub async fn run(db: DatabaseConnection, client: Client) -> std::io::Result<()> 
             .app_data(web::Data::new(clone_db(&db).unwrap()))
     })
     .bind(("0.0.0.0", c.port))?
-    .workers(c.workers)
+    .workers(c.workers as usize)
     .run()
     .await
 }
