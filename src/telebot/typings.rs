@@ -28,7 +28,9 @@ pub mod output {
     }
 
     #[derive(Debug, Deserialize)]
-    pub struct User {}
+    pub struct User {
+        pub id: isize,
+    }
 
     #[derive(Debug, Deserialize)]
     pub struct Chat {

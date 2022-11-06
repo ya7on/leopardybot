@@ -2,7 +2,7 @@ use crate::error::{Error, Result};
 use crate::game::base::GameHandler;
 use crate::telebot::client::Client;
 use crate::telebot::typings::input::Update;
-use crate::telebot::typings::output::Message;
+use crate::telebot::typings::output::{Message, PollAnswer};
 use actix_web::web::Json;
 use actix_web::{web, HttpResponse};
 use regex::Regex;
@@ -65,6 +65,38 @@ async fn handle_message(
     Ok(())
 }
 
+async fn handle_poll_answer(
+    client: &web::Data<Client>,
+    db: &web::Data<DatabaseConnection>,
+    poll_answer: &PollAnswer,
+) -> Result<()> {
+    let player = GameHandler::get_or_create_player(db, poll_answer.user.id).await?;
+    let poll = GameHandler::get_poll(db, poll_answer.poll_id.clone()).await?;
+    let game = GameHandler::get_by_id(db, poll.game_id as usize).await?;
+
+    if poll_answer
+        .option_ids
+        .contains(&(poll.correct_option_id as usize))
+    {
+        GameHandler::add_user_poll_answer(db, player.telegram_id as isize, poll.id.clone(), true)
+            .await?;
+        GameHandler::increase_player_score(db, player.telegram_id as isize, 1).await?;
+
+        client
+            .send_message(game.model.chat_id as isize, &"Совершенно верно".to_string())
+            .await?;
+    } else {
+        GameHandler::add_user_poll_answer(db, player.telegram_id as isize, poll.id.clone(), false)
+            .await?;
+
+        client
+            .send_message(game.model.chat_id as isize, &"Неправильно".to_string())
+            .await?;
+    };
+
+    Ok(())
+}
+
 pub async fn handler(
     update: Json<Update>,
     db: web::Data<DatabaseConnection>,
@@ -88,7 +120,9 @@ pub async fn handler(
             poll_answer: Some(poll_answer),
             ..
         } => {
-            info!("POLL ANSWER {:?}", poll_answer);
+            if let Err(err) = handle_poll_answer(&client, &db, &poll_answer).await {
+                error!("{:?}", err);
+            }
         }
         _ => {
             info!("UNKNOWN");

@@ -9,6 +9,8 @@ pub mod error;
 pub mod game {
     pub mod base;
     pub mod chat;
+    pub mod player;
+    pub mod player_poll_answer;
     pub mod poll;
     pub mod question;
     pub mod typings;
