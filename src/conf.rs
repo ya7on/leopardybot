@@ -12,6 +12,13 @@ pub struct Configuration {
     #[clap(short = 'H', long = "host", env = "LEO_HOST")]
     pub host: String,
 
+    /// DB link in format `$DB_DRIVER://$USERNAME:$PASSWORD@$HOST:$PORT/$DB_NAME`
+    #[clap(short = 'd', long = "db", env = "LEO_DB_URL")]
+    pub db: String,
+
+    #[clap(short = 'T', long = "secret-token", env = "LEO_TG_SECRET_TOKEN")]
+    pub telegram_secret_token: Option<String>,
+
     /// Listening port
     #[clap(short = 'P', long = "port", env = "LEO_PORT", default_value = "8888")]
     pub port: u16,
@@ -19,10 +26,6 @@ pub struct Configuration {
     /// Number of workers
     #[clap(long = "workers", env = "LEO_WORKERS", default_value = "4")]
     pub workers: usize,
-
-    /// DB link in format `$DB_DRIVER://$USERNAME:$PASSWORD@$HOST:$PORT/$DB_NAME`
-    #[clap(short = 'd', long = "db", env = "LEO_DB_URL")]
-    pub db: String,
 
     #[clap(
         long = "quiz-round-time",

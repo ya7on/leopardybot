@@ -21,11 +21,13 @@ pub struct Client {
 }
 
 impl Client {
-    pub async fn new(token: &str, url: &String) -> Result<Self> {
+    pub async fn new(token: &str, url: &String, secret_token: Option<&String>) -> Result<Self> {
         let c = Self {
             token: token.to_owned(),
             client: reqwest::Client::new(),
-            secret_token: Uuid::new_v4().to_string(),
+            secret_token: secret_token
+                .map(|token| token.to_owned())
+                .unwrap_or_else(|| Uuid::new_v4().to_string()),
         };
 
         info!("Updating telegram webhook url to {}", &url);

@@ -16,6 +16,7 @@ async fn main() -> Result<()> {
     let client = Client::new(
         &c.telegram_token,
         &format!("https://{}/api/v1/telegram", &c.host),
+        c.telegram_secret_token.as_ref(),
     )
     .await?;
 
