@@ -63,4 +63,9 @@
         <td>Максимальное количество соединений от Telegram. Может быть в промежутке от 1 до 100 включительно</td>
         <td>40</td>
     </tr>
+    <tr>
+        <td>LEO_CSV_PATH</td>
+        <td>Путь к csv файлу с вопросами. Принимает также http URL. Пример структуры файла можно посмотреть <a href="questions/questions.csv">здесь</a></td>
+        <td>questions/questions.csv</td>
+    </tr>
 </table>
