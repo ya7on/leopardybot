@@ -50,6 +50,9 @@ pub struct Configuration {
     #[clap(env = "LEO_TG_MAX_CONNECTION", default_value = "40")]
     #[arg(value_parser = clap::value_parser!(u8).range(1..=100))]
     pub telegram_max_connections: u8,
+
+    #[clap(env = "LEO_CSV_PATH", default_value = "questions/questions.csv")]
+    pub csv_path: String,
 }
 
 pub fn get_config() -> &'static Configuration {
