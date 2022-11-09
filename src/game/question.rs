@@ -3,7 +3,10 @@ use crate::error::{Error, Result};
 use crate::game::base::GameHandler;
 use crate::game::typings::{QuizPoll, QuizPollOption};
 use rand::seq::SliceRandom;
-use sea_orm::{ConnectionTrait, DatabaseConnection, EntityTrait, Statement};
+use sea_orm::{
+    ColumnTrait, Condition, ConnectionTrait, DatabaseConnection, EntityTrait, PaginatorTrait,
+    QueryFilter, Statement,
+};
 
 impl GameHandler {
     /// TODO FIXME удалить, когда будет реализован другой метод
@@ -55,12 +58,27 @@ impl GameHandler {
         })
     }
 
-    pub async fn clear_question(db: &DatabaseConnection) -> Result<()> {
-        <quiz::Entity as EntityTrait>::delete_many()
-            .exec(db)
+    // pub async fn clear_question(db: &DatabaseConnection) -> Result<()> {
+    //     <quiz::Entity as EntityTrait>::delete_many()
+    //         .exec(db)
+    //         .await
+    //         .map_err(|err| Error::DatabaseError(format!("Cannot delete quiz. {}", err)))?;
+    //     Ok(())
+    // }
+
+    pub async fn question_exists(db: &DatabaseConnection, question_id: usize) -> Result<bool> {
+        Ok(<quiz::Entity as EntityTrait>::find()
+            .filter(
+                Condition::all()
+                    .add(<quiz::Entity as EntityTrait>::Column::Id.eq(question_id as i32)),
+            )
+            .count(db)
             .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot delete quiz. {}", err)))?;
-        Ok(())
+            .map_err(|err| {
+                error!("Cannot fetch questions from DB. {}", err);
+                Error::DatabaseError(format!("Cannot fetch questions from DB. {}", err))
+            })?
+            > 0)
     }
 
     pub async fn insert_questions(

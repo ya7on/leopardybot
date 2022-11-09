@@ -20,7 +20,7 @@ pub async fn run(db: DatabaseConnection, client: Client) {
                     let game = GameHandler::get_by_id(&db, poll.game_id as usize).await?;
                     let chat_id = game.model.chat_id;
                     let round_number = game.get_rounds(&db).await?;
-                    if round_number >= c.quiz_rounds_count {
+                    if round_number >= c.quiz_rounds_count as usize {
                         // TODO вынести в настройку
                         client
                             .send_message(chat_id as isize, &TextFormatter::game_over()?)

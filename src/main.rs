@@ -17,6 +17,7 @@ async fn main() -> Result<()> {
         &c.telegram_token,
         &format!("https://{}/api/v1/telegram", &c.host),
         c.telegram_secret_token.as_ref(),
+        c.telegram_max_connections,
     )
     .await?;
 
