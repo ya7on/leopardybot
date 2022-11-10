@@ -1,6 +1,6 @@
 use crate::conf::get_config;
 use crate::error::{Error, Result};
-use crate::telebot::typings::output::Message;
+use crate::telebot::typings::output::{BotCommand, Message};
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use uuid::Uuid;
@@ -91,6 +91,32 @@ impl Client {
                     ("url", url.to_owned()),
                     ("secret_token", self.secret_token.to_owned()),
                     ("max_connections", max_connections.to_string()),
+                ],
+            )
+            .await;
+        debug!("set_webhook_info: {:?}", response);
+        response
+    }
+
+    pub async fn set_my_commands(
+        &self,
+        commands: Vec<BotCommand>,
+        scope: &str,
+    ) -> Result<JsonResponse<Option<bool>>> {
+        let response = self
+            .execute(
+                "setMyCommands",
+                &[
+                    (
+                        "commands",
+                        serde_json::to_string(&commands).map_err(|err| {
+                            Error::SerializationError(format!(
+                                "Cannot serialize commands list. {}",
+                                err
+                            ))
+                        })?,
+                    ),
+                    ("scope", format!(r#"{{"type": "{}"}}"#, scope)),
                 ],
             )
             .await;
