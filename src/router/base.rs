@@ -71,7 +71,7 @@ impl RouteMatch {
                 {
                     if let Some(text) = &message.text {
                         if let Some(c) = Self::parse_command(text)? {
-                            return Ok(c == command.to_owned());
+                            return Ok(c == *command);
                         }
                     }
                 }
@@ -93,14 +93,14 @@ pub struct RouteCfg {
     pub description: Option<String>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Router {
     routes: Vec<RouteCfg>,
 }
 
 impl Router {
     pub fn new() -> Self {
-        Self { routes: vec![] }
+        Self::default()
     }
 
     pub fn register(mut self, command: RouteCfg) -> Router {
