@@ -14,6 +14,7 @@ pub mod input {
 
 pub mod output {
     use super::*;
+    use serde::Serialize;
 
     #[derive(Debug, Deserialize)]
     pub enum ChatType {
@@ -71,6 +72,12 @@ pub mod output {
         pub chat: Chat,
         pub text: Option<String>,
         pub poll: Option<Poll>,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    pub struct BotCommand {
+        pub command: String,
+        pub description: String,
     }
 
     #[derive(Debug, Deserialize)]

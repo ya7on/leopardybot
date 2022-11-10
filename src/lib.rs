@@ -2,6 +2,13 @@
 extern crate log;
 
 pub mod api;
+pub mod router {
+    pub mod base;
+    pub mod help;
+    pub mod play;
+    pub mod poll_answer;
+    pub mod start;
+}
 pub mod conf;
 pub mod db;
 pub mod entities;
