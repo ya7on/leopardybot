@@ -20,6 +20,8 @@ impl RouteHandler for PlayCommand {
         let c = get_config();
         // FIXME
         if let Some(message) = &update.message {
+            GameHandler::register_chat(db, message.chat.id).await?;
+
             if !GameHandler::exists(db, message.chat.id).await? {
                 let game = GameHandler::create(db, message.chat.id).await?;
                 let mut question = GameHandler::get_question(db).await?;
