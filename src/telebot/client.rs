@@ -1,4 +1,3 @@
-use crate::conf::get_config;
 use crate::error::{Error, Result};
 use crate::telebot::typings::output::{BotCommand, Message};
 use serde::de::DeserializeOwned;
@@ -127,7 +126,7 @@ impl Client {
     pub(crate) async fn send_message(
         &self,
         chat_id: isize,
-        text: &String,
+        text: &str,
     ) -> Result<JsonResponse<Message>> {
         let response = self
             .execute(
@@ -149,32 +148,30 @@ impl Client {
         question: &String,
         options: &Vec<String>,
         correct_option_id: usize,
+        open_period: Option<u16>,
     ) -> Result<JsonResponse<Message>> {
-        let c = get_config();
-        let response = self
-            .execute(
-                "sendPoll",
-                &[
-                    ("chat_id", chat_id.to_string()),
-                    ("question", question.to_string()),
-                    (
-                        "options",
-                        serde_json::to_string(options).map_err(|err| {
-                            error!("Cannot convert options to json array. {}", err);
-                            Error::SerializationError(format!(
-                                "Cannot convert options to json array. {}",
-                                err
-                            ))
-                        })?,
-                    ),
-                    ("is_anonymous", "false".to_string()),
-                    ("type", "quiz".to_string()),
-                    ("correct_option_id", correct_option_id.to_string()),
-                    ("open_period", c.quiz_round_time.to_string()),
-                    ("protect_content", true.to_string()),
-                ],
-            )
-            .await;
+        let mut form = vec![
+            ("chat_id", chat_id.to_string()),
+            ("question", question.to_string()),
+            (
+                "options",
+                serde_json::to_string(options).map_err(|err| {
+                    error!("Cannot convert options to json array. {}", err);
+                    Error::SerializationError(format!(
+                        "Cannot convert options to json array. {}",
+                        err
+                    ))
+                })?,
+            ),
+            ("is_anonymous", "false".to_string()),
+            ("type", "quiz".to_string()),
+            ("correct_option_id", correct_option_id.to_string()),
+            ("protect_content", true.to_string()),
+        ];
+        if let Some(open_period) = open_period {
+            form.push(("open_period", open_period.to_string()));
+        }
+        let response = self.execute("sendPoll", &form).await;
         debug!("send_quiz: {:?}", response);
         response
     }

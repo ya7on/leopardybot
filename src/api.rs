@@ -28,8 +28,10 @@ pub async fn handler(
         return HttpResponse::Unauthorized().finish();
     }
 
+    debug!("Update: {:?}", update);
+
     if let Err(err) = router.handle(&update, &db, &client).await {
-        println!("ERRRRRRR {:?}", err);
+        error!("{:?}", err);
     }
 
     HttpResponse::Ok().finish()

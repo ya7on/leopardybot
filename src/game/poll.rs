@@ -18,12 +18,7 @@ impl GameHandler {
                 .correct_option_id
                 .ok_or_else(|| Error::SerializationError("TODO".to_string()))?
                 as i32),
-            close_date: Set(Some(
-                tg_poll
-                    .close_date
-                    .ok_or_else(|| Error::SerializationError("TODO".to_string()))?
-                    as i32,
-            )),
+            close_date: Set(tg_poll.close_date.map(|cd| cd as i32)),
             ..Default::default()
         }
         .insert(db)

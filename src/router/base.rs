@@ -1,7 +1,7 @@
 use crate::error::{Error, Result};
 use crate::telebot::client::Client;
 use crate::telebot::typings::input::Update;
-use crate::telebot::typings::output::BotCommand;
+use crate::telebot::typings::output::{BotCommand, ChatType, Message};
 use regex::Regex;
 use sea_orm::DatabaseConnection;
 
@@ -41,7 +41,6 @@ pub enum CommandScope {
     Any,
     PrivateChats,
     GroupChats,
-    AllChatAdministrators,
 }
 
 #[derive(Clone)]
@@ -54,35 +53,52 @@ pub enum RouteMatch {
 }
 
 impl RouteMatch {
-    fn parse_command(text: &str) -> Result<Option<String>> {
-        let re = Regex::new(r"(/[a-zA-Z0-9_]+)(@.+)?")
-            .map_err(|err| Error::SerializationError(format!("Invalid regex. {}", err)))?;
-        Ok(re.captures(text).map(|c| c[1].to_string()))
+    fn check_message(
+        &self,
+        update: &Update,
+        expected_command: &String,
+        command_scope: &CommandScope,
+    ) -> Result<bool> {
+        fn check_scope(message: &Message, command_scope: &CommandScope) -> bool {
+            match command_scope {
+                CommandScope::Any => true,
+                CommandScope::PrivateChats => message.chat.chat_type == ChatType::Private,
+                CommandScope::GroupChats => {
+                    message.chat.chat_type == ChatType::Group
+                        || message.chat.chat_type == ChatType::Supergroup
+                }
+            }
+        }
+
+        fn check_command(message: &Message, expected_command: &String) -> Result<bool> {
+            if let Some(text) = &message.text {
+                let re = Regex::new(r"(/[a-zA-Z0-9_]+)(@.+)?")
+                    .map_err(|err| Error::SerializationError(format!("Invalid regex. {}", err)))?;
+                if let Some(command) = re.captures(text).map(|c| c[1].to_string()) {
+                    return Ok(command == expected_command.to_owned());
+                }
+            }
+            Ok(false)
+        }
+
+        if let Some(message) = &update.message {
+            return Ok(
+                check_scope(message, command_scope) && check_command(message, expected_command)?
+            );
+        }
+        Ok(false)
     }
 
-    /// FIXME сделать как-то красивее
+    // TODO что будет при отмене ответа пользователя
+    fn check_poll_answer(&self, update: &Update) -> Result<bool> {
+        Ok(update.poll_answer.is_some())
+    }
+
     pub fn check(&self, update: &Update) -> Result<bool> {
         match self {
-            RouteMatch::Command { command, .. } => {
-                if let Update {
-                    message: Some(message),
-                    ..
-                } = update
-                {
-                    if let Some(text) = &message.text {
-                        if let Some(c) = Self::parse_command(text)? {
-                            return Ok(c == *command);
-                        }
-                    }
-                }
-            }
-            RouteMatch::PollAnswer => {
-                if update.poll_answer.is_some() {
-                    return Ok(true);
-                }
-            }
-        };
-        Ok(false)
+            RouteMatch::Command { command, scope } => self.check_message(update, command, scope),
+            RouteMatch::PollAnswer => self.check_poll_answer(update),
+        }
     }
 }
 
@@ -162,8 +178,6 @@ impl Router {
                                 command: command_text.to_owned(),
                                 description: description.clone(),
                             });
-                        }
-                        CommandScope::AllChatAdministrators => {
                             commands.group_administrators.push(BotCommand {
                                 command: command_text.to_owned(),
                                 description: description.clone(),

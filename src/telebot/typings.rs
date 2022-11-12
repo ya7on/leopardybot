@@ -16,7 +16,7 @@ pub mod output {
     use super::*;
     use serde::Serialize;
 
-    #[derive(Debug, Deserialize)]
+    #[derive(Debug, Deserialize, PartialEq)]
     pub enum ChatType {
         #[serde(rename = "private")]
         Private,
@@ -37,7 +37,7 @@ pub mod output {
     pub struct Chat {
         pub id: isize,
         #[serde(rename = "type")]
-        pub chat_type: Option<ChatType>,
+        pub chat_type: ChatType,
     }
 
     #[derive(Debug, Deserialize)]

@@ -29,7 +29,7 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Game::ChatId).integer().not_null())
+                    .col(ColumnDef::new(Game::ChatId).big_integer().not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-game-to-chat")

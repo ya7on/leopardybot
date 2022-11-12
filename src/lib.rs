@@ -5,7 +5,8 @@ pub mod api;
 pub mod router {
     pub mod base;
     pub mod help;
-    pub mod play;
+    pub mod play_group;
+    pub mod play_single;
     pub mod poll_answer;
     pub mod start;
 }
