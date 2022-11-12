@@ -3,7 +3,8 @@ use leopardybot::db::{clone_db, create_db};
 use leopardybot::error::{Error, Result};
 use leopardybot::router::base::{CommandScope, RouteCfg, RouteMatch, Router};
 use leopardybot::router::help::HelpCommand;
-use leopardybot::router::play::PlayCommand;
+use leopardybot::router::play_group::PlayGroupCommand;
+use leopardybot::router::play_single::PlaySingleCommand;
 use leopardybot::router::poll_answer::PollAnswerHandler;
 use leopardybot::router::start::StartCommand;
 use leopardybot::telebot::client::Client;
@@ -45,10 +46,18 @@ async fn main() -> Result<()> {
         .register(RouteCfg {
             route_match: RouteMatch::Command {
                 command: "/play".to_owned(),
-                scope: CommandScope::Any,
+                scope: CommandScope::GroupChats,
             },
-            handler: Box::new(PlayCommand),
-            description: Some("Начать игру".to_owned()),
+            handler: Box::new(PlayGroupCommand),
+            description: Some("Начать групповую игру".to_owned()),
+        })
+        .register(RouteCfg {
+            route_match: RouteMatch::Command {
+                command: "/play".to_owned(),
+                scope: CommandScope::PrivateChats,
+            },
+            handler: Box::new(PlaySingleCommand),
+            description: Some("Начать одиночную игру".to_owned()),
         })
         .register(RouteCfg {
             route_match: RouteMatch::PollAnswer,

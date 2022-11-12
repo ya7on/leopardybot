@@ -26,10 +26,14 @@ impl GameHandler {
     }
 
     /// Create new game with chat id
-    pub async fn create(db: &DatabaseConnection, chat_id: isize) -> Result<Self> {
+    pub async fn create(
+        db: &DatabaseConnection,
+        chat_id: isize,
+        game_mode: Gamemodes,
+    ) -> Result<Self> {
         let g = game::ActiveModel {
-            chat_id: Set(chat_id as i32),
-            game_mode: Set(Gamemodes::Singleplayer),
+            chat_id: Set(chat_id as i64),
+            game_mode: Set(game_mode),
             ..Default::default()
         }
         .insert(db)

@@ -22,9 +22,9 @@ impl TextFormatter {
         Ok(writer)
     }
 
-    pub fn new_chat() -> Result<String> {
+    pub fn new_group_chat() -> Result<String> {
         let mut writer = String::new();
-        writeln!(writer, "Привет всем в этом чате")
+        writeln!(writer, "Привет всем в этом чате!")
             .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
         Ok(writer)
     }
@@ -50,6 +50,26 @@ impl TextFormatter {
             .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
         writeln!(writer, "/help - помощь")
             .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
+        Ok(writer)
+    }
+
+    pub fn group_game_already_started() -> Result<String> {
+        let mut writer = String::new();
+        writeln!(
+            writer,
+            "<b>Игра уже запущена! Дождитесь следующего раунда</b>"
+        )
+        .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
+        Ok(writer)
+    }
+
+    pub fn single_game_already_started() -> Result<String> {
+        let mut writer = String::new();
+        writeln!(
+            writer,
+            "<b>Игра уже запущена! Ответьте на вопрос чтобы перейти к следующему</b>"
+        )
+        .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
         Ok(writer)
     }
 }

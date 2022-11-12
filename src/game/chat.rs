@@ -11,7 +11,7 @@ impl GameHandler {
     pub async fn register_chat(db: &DatabaseConnection, chat_id: isize) -> Result<bool> {
         let chat_count = <chat::Entity as EntityTrait>::find()
             .filter(
-                Condition::all().add(<chat::Entity as EntityTrait>::Column::Id.eq(chat_id as i32)),
+                Condition::all().add(<chat::Entity as EntityTrait>::Column::Id.eq(chat_id as i64)),
             )
             .count(db)
             .await
@@ -20,7 +20,7 @@ impl GameHandler {
             Ok(false)
         } else {
             chat::ActiveModel {
-                id: Set(chat_id as i32),
+                id: Set(chat_id as i64),
             }
             .insert(db)
             .await

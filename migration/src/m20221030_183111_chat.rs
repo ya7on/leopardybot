@@ -12,7 +12,12 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Chat::Table)
                     .if_not_exists()
-                    .col(ColumnDef::new(Chat::Id).integer().not_null().primary_key())
+                    .col(
+                        ColumnDef::new(Chat::Id)
+                            .big_integer()
+                            .not_null()
+                            .primary_key(),
+                    )
                     .to_owned(),
             )
             .await
