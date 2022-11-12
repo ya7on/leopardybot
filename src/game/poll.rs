@@ -10,9 +10,15 @@ use sea_orm::{
 };
 
 impl GameHandler {
-    pub async fn register_poll(&self, db: &DatabaseConnection, tg_poll: &Poll) -> Result<()> {
+    pub async fn register_poll(
+        &self,
+        db: &DatabaseConnection,
+        tg_poll: &Poll,
+        message_id: usize,
+    ) -> Result<()> {
         poll::ActiveModel {
             id: Set(tg_poll.id.clone()),
+            message_id: Set(message_id as i64),
             game_id: Set(self.model.id as i32),
             correct_option_id: Set(tg_poll
                 .correct_option_id
@@ -71,5 +77,17 @@ impl GameHandler {
             .await
             .map_err(|err| Error::DatabaseError(format!("Cannot update poll. {}", err)))?
             .ok_or_else(|| Error::DatabaseError("Cannot find poll".to_string()))
+    }
+
+    pub async fn get_active_polls(&self, db: &DatabaseConnection) -> Result<Vec<poll::Model>> {
+        <poll::Entity as EntityTrait>::find()
+            .filter(
+                Condition::all()
+                    .add(<poll::Entity as EntityTrait>::Column::GameId.eq(self.model.id))
+                    .add(<poll::Entity as EntityTrait>::Column::Handled.eq(false)),
+            )
+            .all(db)
+            .await
+            .map_err(|err| Error::DatabaseError(format!("Cannot get active poll. {}", err)))
     }
 }

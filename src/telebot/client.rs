@@ -82,7 +82,7 @@ impl Client {
         &self,
         url: &str,
         max_connections: u8,
-    ) -> Result<JsonResponse<Option<bool>>> {
+    ) -> Result<JsonResponse<bool>> {
         let response = self
             .execute(
                 "setWebhook",
@@ -101,7 +101,7 @@ impl Client {
         &self,
         commands: Vec<BotCommand>,
         scope: &str,
-    ) -> Result<JsonResponse<Option<bool>>> {
+    ) -> Result<JsonResponse<bool>> {
         let response = self
             .execute(
                 "setMyCommands",
@@ -173,6 +173,24 @@ impl Client {
         }
         let response = self.execute("sendPoll", &form).await;
         debug!("send_quiz: {:?}", response);
+        response
+    }
+
+    pub(crate) async fn delete_message(
+        &self,
+        chat_id: isize,
+        message_id: usize,
+    ) -> Result<JsonResponse<bool>> {
+        let response = self
+            .execute(
+                "deleteMessage",
+                &[
+                    ("chat_id", chat_id.to_string()),
+                    ("message_id", message_id.to_string()),
+                ],
+            )
+            .await;
+        debug!("delete_message: {:?}", response);
         response
     }
 }

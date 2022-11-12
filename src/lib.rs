@@ -8,6 +8,7 @@ pub mod router {
     pub mod play_group;
     pub mod play_single;
     pub mod poll_answer;
+    pub mod restart;
     pub mod start;
 }
 pub mod conf;
