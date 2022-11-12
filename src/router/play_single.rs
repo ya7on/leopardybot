@@ -41,7 +41,7 @@ impl RouteHandler for PlaySingleCommand {
                 let poll = result
                     .poll
                     .ok_or_else(|| Error::SerializationError("Empty poll field".to_owned()))?;
-                game.register_poll(db, &poll).await?;
+                game.register_poll(db, &poll, result.message_id).await?;
             } else {
                 client
                     .send_message(

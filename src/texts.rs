@@ -46,6 +46,19 @@ impl TextFormatter {
             .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
         writeln!(writer)
             .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
+        writeln!(writer, "<b>Режимы игры</b>:")
+            .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
+        writeln!(writer, "В личной переписке с ботом новые вопросы будут присылаться по мере того, как вы отвечаете в викторинах")
+            .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
+        writeln!(
+            writer,
+            "В групповых чатах время на ответ ограничено и игра поделена на несколько раундов"
+        )
+        .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
+        writeln!(writer)
+            .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
+        writeln!(writer, "<b>Команды</b>:")
+            .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
         writeln!(writer, "/play - сыграть в игру")
             .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
         writeln!(writer, "/help - помощь")
@@ -67,7 +80,12 @@ impl TextFormatter {
         let mut writer = String::new();
         writeln!(
             writer,
-            "<b>Игра уже запущена! Ответьте на вопрос чтобы перейти к следующему</b>"
+            "<b>Вы уже играете! Ответьте на предыдущий вопрос чтобы перейти к следующему</b>"
+        )
+        .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
+        writeln!(
+            writer,
+            "Если вы очистили чат с ботом или по какой-то другой причине не можете найти сообщение с викториной, введите /restart"
         )
         .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
         Ok(writer)

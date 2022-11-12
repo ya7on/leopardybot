@@ -6,6 +6,7 @@ use leopardybot::router::help::HelpCommand;
 use leopardybot::router::play_group::PlayGroupCommand;
 use leopardybot::router::play_single::PlaySingleCommand;
 use leopardybot::router::poll_answer::PollAnswerHandler;
+use leopardybot::router::restart::RestartCommand;
 use leopardybot::router::start::StartCommand;
 use leopardybot::telebot::client::Client;
 use leopardybot::{job, seeder, server};
@@ -58,6 +59,14 @@ async fn main() -> Result<()> {
             },
             handler: Box::new(PlaySingleCommand),
             description: Some("Начать одиночную игру".to_owned()),
+        })
+        .register(RouteCfg {
+            route_match: RouteMatch::Command {
+                command: "/restart".to_owned(),
+                scope: CommandScope::PrivateChats,
+            },
+            handler: Box::new(RestartCommand),
+            description: Some("Пересоздать последний опрос".to_owned()),
         })
         .register(RouteCfg {
             route_match: RouteMatch::PollAnswer,

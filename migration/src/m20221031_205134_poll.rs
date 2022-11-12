@@ -13,6 +13,7 @@ impl MigrationTrait for Migration {
                     .table(Poll::Table)
                     .if_not_exists()
                     .col(ColumnDef::new(Poll::Id).string().not_null().primary_key())
+                    .col(ColumnDef::new(Poll::MessageId).big_integer().not_null())
                     .col(ColumnDef::new(Poll::GameId).integer().not_null())
                     .foreign_key(
                         ForeignKey::create()
@@ -42,6 +43,7 @@ impl MigrationTrait for Migration {
 pub enum Poll {
     Table,
     Id,
+    MessageId,
     GameId,
     CorrectOptionId,
     CloseDate,
