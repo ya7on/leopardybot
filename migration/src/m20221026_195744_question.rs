@@ -1,3 +1,4 @@
+use crate::idens::Quiz;
 use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
@@ -36,16 +37,4 @@ impl MigrationTrait for Migration {
             .await?;
         Ok(())
     }
-}
-
-/// Learn more at https://docs.rs/sea-query#iden
-#[derive(Iden)]
-pub enum Quiz {
-    Table,
-    Id,
-    Text,
-    CorrectOption,
-    Option2,
-    Option3,
-    Option4,
 }

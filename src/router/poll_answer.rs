@@ -4,6 +4,7 @@ use crate::game::base::GameHandler;
 use crate::router::base::RouteHandler;
 use crate::telebot::client::Client;
 use crate::telebot::typings::input::Update;
+use crate::texts::TextFormatter;
 use sea_orm::DatabaseConnection;
 
 #[derive(Clone)]
@@ -45,7 +46,21 @@ impl RouteHandler for PollAnswerHandler {
             };
 
             if game.model.game_mode == Gamemodes::Singleplayer {
-                let question = GameHandler::get_question(&db).await?;
+                let question = if let Some(question) =
+                    GameHandler::get_new_question(db, poll_answer.user.id).await?
+                {
+                    GameHandler::mark_quiz_as_played(db, poll_answer.user.id, question.id as isize)
+                        .await?;
+                    question
+                } else {
+                    client
+                        .send_message(
+                            game.model.chat_id as isize,
+                            &TextFormatter::cannot_find_new_quiz()?,
+                        )
+                        .await?;
+                    GameHandler::get_question(db).await?
+                };
                 let response = client
                     .send_quiz(
                         game.model.chat_id as isize,

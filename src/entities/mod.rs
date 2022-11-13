@@ -5,6 +5,7 @@ pub mod prelude;
 pub mod chat;
 pub mod game;
 pub mod player;
+pub mod player_played_quiz;
 pub mod player_poll_answer;
 pub mod poll;
 pub mod quiz;
