@@ -1,5 +1,5 @@
 use crate::extension::postgres::Type;
-use crate::m20221030_183111_chat::Chat;
+use crate::idens::{Chat, Game};
 use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
@@ -83,14 +83,4 @@ impl Iden for GameModes {
         )
         .unwrap();
     }
-}
-
-/// Learn more at https://docs.rs/sea-query#iden
-#[derive(Iden)]
-pub(crate) enum Game {
-    Table,
-    Id,
-    ChatId,
-    Active,
-    GameMode,
 }

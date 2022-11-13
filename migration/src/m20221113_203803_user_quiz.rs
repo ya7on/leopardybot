@@ -1,4 +1,4 @@
-use crate::idens::{Player, PlayerPollAnswer, Poll};
+use crate::idens::{Player, PlayerPlayedQuiz, Quiz};
 use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
@@ -11,38 +11,37 @@ impl MigrationTrait for Migration {
         manager
             .create_table(
                 Table::create()
-                    .table(PlayerPollAnswer::Table)
+                    .table(PlayerPlayedQuiz::Table)
                     .if_not_exists()
                     .col(
-                        ColumnDef::new(PlayerPollAnswer::PlayerId)
+                        ColumnDef::new(PlayerPlayedQuiz::PlayerId)
                             .integer()
                             .not_null(),
                     )
                     .foreign_key(
                         ForeignKey::create()
-                            .name("fk-answer-to-player")
-                            .from(PlayerPollAnswer::Table, PlayerPollAnswer::PlayerId)
+                            .name("fk-played-quiz-to-player")
+                            .from(PlayerPlayedQuiz::Table, PlayerPlayedQuiz::PlayerId)
                             .to(Player::Table, Player::TelegramId)
                             .on_delete(ForeignKeyAction::Cascade),
                     )
-                    .col(ColumnDef::new(PlayerPollAnswer::PollId).string().not_null())
+                    .col(
+                        ColumnDef::new(PlayerPlayedQuiz::QuizId)
+                            .integer()
+                            .not_null(),
+                    )
                     .foreign_key(
                         ForeignKey::create()
-                            .name("fk-answer-to-poll")
-                            .from(PlayerPollAnswer::Table, PlayerPollAnswer::PollId)
-                            .to(Poll::Table, Poll::Id)
+                            .name("fk-played-quiz-to-quiz")
+                            .from(PlayerPlayedQuiz::Table, PlayerPlayedQuiz::QuizId)
+                            .to(Quiz::Table, Quiz::Id)
                             .on_delete(ForeignKeyAction::Cascade),
-                    )
-                    .col(
-                        ColumnDef::new(PlayerPollAnswer::IsCorrect)
-                            .boolean()
-                            .not_null(),
                     )
                     .primary_key(
                         Index::create()
-                            .name("idx-answer-player-pollid")
-                            .col(PlayerPollAnswer::PlayerId)
-                            .col(PlayerPollAnswer::PollId),
+                            .name("idx-player-quizid-played")
+                            .col(PlayerPlayedQuiz::PlayerId)
+                            .col(PlayerPlayedQuiz::QuizId),
                     )
                     .to_owned(),
             )
@@ -52,7 +51,7 @@ impl MigrationTrait for Migration {
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         // Replace the sample below with your own migration scripts
         manager
-            .drop_table(Table::drop().table(PlayerPollAnswer::Table).to_owned())
+            .drop_table(Table::drop().table(PlayerPlayedQuiz::Table).to_owned())
             .await
     }
 }

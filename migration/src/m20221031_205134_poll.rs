@@ -1,4 +1,4 @@
-use crate::m20221030_193210_game::Game;
+use crate::idens::{Game, Poll};
 use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
@@ -36,16 +36,4 @@ impl MigrationTrait for Migration {
             .drop_table(Table::drop().table(Poll::Table).to_owned())
             .await
     }
-}
-
-/// Learn more at https://docs.rs/sea-query#iden
-#[derive(Iden)]
-pub enum Poll {
-    Table,
-    Id,
-    MessageId,
-    GameId,
-    CorrectOptionId,
-    CloseDate,
-    Handled,
 }

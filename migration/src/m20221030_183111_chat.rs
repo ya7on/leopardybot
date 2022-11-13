@@ -1,3 +1,4 @@
+use crate::idens::Chat;
 use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
@@ -29,11 +30,4 @@ impl MigrationTrait for Migration {
             .drop_table(Table::drop().table(Chat::Table).to_owned())
             .await
     }
-}
-
-/// Learn more at https://docs.rs/sea-query#iden
-#[derive(Iden)]
-pub(crate) enum Chat {
-    Table,
-    Id,
 }

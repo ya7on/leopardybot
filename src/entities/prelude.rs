@@ -3,6 +3,7 @@
 pub use super::chat::Entity as Chat;
 pub use super::game::Entity as Game;
 pub use super::player::Entity as Player;
+pub use super::player_played_quiz::Entity as PlayerPlayedQuiz;
 pub use super::player_poll_answer::Entity as PlayerPollAnswer;
 pub use super::poll::Entity as Poll;
 pub use super::quiz::Entity as Quiz;

@@ -90,4 +90,23 @@ impl TextFormatter {
         .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
         Ok(writer)
     }
+
+    pub fn cannot_find_new_quiz() -> Result<String> {
+        let mut writer = String::new();
+        writeln!(writer, "<b>Новые вопросы закончились :(</b>")
+            .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
+        write!(
+            writer,
+            "Вы ответили на все доступные на данный момент викторины. "
+        )
+        .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
+        write!(writer, "Следующую викторину вы уже вероятно уже видели. ")
+            .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
+        write!(
+            writer,
+            "Мы ежедневно добавляем новые вопросы, но вы играете в них быстрее :)"
+        )
+        .map_err(|err| Error::SerializationError(format!("Cannot write line. {}", err)))?;
+        Ok(writer)
+    }
 }
