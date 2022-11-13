@@ -3,6 +3,7 @@ use crate::error::{Error, Result};
 use crate::game::base::GameHandler;
 use crate::game::typings::{QuizPoll, QuizPollOption};
 use rand::seq::SliceRandom;
+use sea_orm::sea_query::OnConflict;
 use sea_orm::{
     ColumnTrait, Condition, ConnectionTrait, DatabaseConnection, EntityTrait, PaginatorTrait,
     QueryFilter, Statement,
@@ -86,6 +87,17 @@ impl GameHandler {
         records: Vec<quiz::ActiveModel>,
     ) -> Result<()> {
         <quiz::Entity as EntityTrait>::insert_many(records)
+            .on_conflict(
+                OnConflict::column(<quiz::Entity as EntityTrait>::Column::Id)
+                    .update_columns(vec![
+                        <quiz::Entity as EntityTrait>::Column::Text,
+                        <quiz::Entity as EntityTrait>::Column::CorrectOption,
+                        <quiz::Entity as EntityTrait>::Column::Option2,
+                        <quiz::Entity as EntityTrait>::Column::Option3,
+                        <quiz::Entity as EntityTrait>::Column::Option4,
+                    ])
+                    .to_owned(),
+            )
             .exec(db)
             .await
             .map_err(|err| Error::DatabaseError(format!("Cannot insert quiz. {}", err)))?;
