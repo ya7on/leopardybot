@@ -75,7 +75,7 @@ impl RouteMatch {
                 let re = Regex::new(r"(/[a-zA-Z0-9_]+)(@.+)?")
                     .map_err(|err| Error::SerializationError(format!("Invalid regex. {}", err)))?;
                 if let Some(command) = re.captures(text).map(|c| c[1].to_string()) {
-                    return Ok(command == expected_command.to_owned());
+                    return Ok(command == *expected_command);
                 }
             }
             Ok(false)

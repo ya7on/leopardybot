@@ -74,11 +74,11 @@ impl RouteHandler for PollAnswerHandler {
                     // FIXME error handle
                     Error::SerializationError("Empty result field".to_string())
                 })?;
-                GameHandler::mark_poll_as_handled(&db, poll.id.clone()).await?;
+                GameHandler::mark_poll_as_handled(db, poll.id.clone()).await?;
                 let poll = result
                     .poll
                     .ok_or_else(|| Error::SerializationError("Empty poll field".to_string()))?;
-                game.register_poll(&db, &poll, result.message_id).await?;
+                game.register_poll(db, &poll, result.message_id).await?;
             }
         }
 

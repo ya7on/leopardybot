@@ -23,7 +23,7 @@ impl RouteHandler for RestartCommand {
                     client
                         .delete_message(message.chat.id, poll.message_id as usize)
                         .await?;
-                    GameHandler::mark_poll_as_handled(&db, poll.id.clone()).await?;
+                    GameHandler::mark_poll_as_handled(db, poll.id.clone()).await?;
                 }
                 let question = GameHandler::get_question(db).await?;
                 let response = client

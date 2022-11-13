@@ -81,7 +81,7 @@ impl GameHandler {
                 error!("Empty question result");
                 Error::DatabaseError("Empty question result".to_string())
             })?;
-        Ok(Self::parse_question_result(quiz)?)
+        Self::parse_question_result(quiz)
     }
 
     // pub async fn clear_question(db: &DatabaseConnection) -> Result<()> {
