@@ -49,17 +49,14 @@ pub async fn run(db: DatabaseConnection) -> Result<()> {
     for record in reader.deserialize::<CsvQuizRow>() {
         let record = record
             .map_err(|err| Error::SerializationError(format!("Cannot parse csv row. {}", err)))?;
-        if !GameHandler::question_exists(&db, record.id).await? {
-            debug!("New question: {:?}", record);
-            questions.push(quiz::ActiveModel {
-                id: Set(record.id as i32),
-                text: Set(record.question),
-                correct_option: Set(record.correct_answer),
-                option2: Set(record.answer_2),
-                option3: Set(record.answer_3),
-                option4: Set(record.answer_4),
-            })
-        }
+        questions.push(quiz::ActiveModel {
+            id: Set(record.id as i32),
+            text: Set(record.question),
+            correct_option: Set(record.correct_answer),
+            option2: Set(record.answer_2),
+            option3: Set(record.answer_3),
+            option4: Set(record.answer_4),
+        })
     }
     for to_insert in questions.chunks(100) {
         GameHandler::insert_questions(&db, to_insert.to_vec()).await?;
