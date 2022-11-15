@@ -1,6 +1,6 @@
 use leopardybot::conf::get_config;
 use leopardybot::db::{clone_db, create_db};
-use leopardybot::error::{Error, Result};
+use leopardybot::error::Result;
 use leopardybot::router::base::{CommandScope, RouteCfg, RouteMatch, Router};
 use leopardybot::router::help::HelpCommand;
 use leopardybot::router::play_group::PlayGroupCommand;
@@ -14,7 +14,12 @@ use leopardybot::{job, seeder, server};
 #[actix_web::main]
 async fn main() -> Result<()> {
     env_logger::Builder::from_default_env()
-        .filter_module("sqlx::query", log::LevelFilter::Error)
+        .filter_module("sqlx", log::LevelFilter::Error)
+        .filter_module("hyper", log::LevelFilter::Error)
+        .filter_module("sea_orm_migration", log::LevelFilter::Error)
+        .filter_module("reqwest", log::LevelFilter::Error)
+        .filter_module("actix_server", log::LevelFilter::Error)
+        .filter_module("actix_web", log::LevelFilter::Error)
         .init();
 
     let c = get_config();
@@ -93,8 +98,6 @@ async fn main() -> Result<()> {
 
     seeder::run(clone_db(&db)?).await?;
     job::run(clone_db(&db)?, client.clone()).await;
-    server::run(db, client, router)
-        .await
-        .map_err(|err| Error::UncategorizedError(format!("Cannot run server. {}", err)))?;
+    server::run(db, client, router).await?;
     Ok(())
 }

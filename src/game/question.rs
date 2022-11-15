@@ -31,7 +31,7 @@ impl GameHandler {
         let correct_answer_id = options
             .iter()
             .position(|i| i.is_correct)
-            .ok_or_else(|| Error::SerializationError("Cannot find correct answer".to_string()))?;
+            .ok_or_else(|| Error("Cannot find correct answer".to_string()))?;
 
         Ok(QuizPoll {
             id: quiz_model.id,
@@ -54,11 +54,7 @@ impl GameHandler {
         if let Some(quiz) = <quiz::Entity as EntityTrait>::find()
             .from_raw_sql(stmt)
             .one(db)
-            .await
-            .map_err(|err| {
-                error!("Cannot fetch questions from DB. {}", err);
-                Error::DatabaseError(format!("Cannot fetch questions from DB. {}", err))
-            })?
+            .await?
         {
             Ok(Some(Self::parse_question_result(quiz)?))
         } else {
@@ -72,15 +68,8 @@ impl GameHandler {
         let quiz = <quiz::Entity as EntityTrait>::find()
             .from_raw_sql(stmt)
             .one(db)
-            .await
-            .map_err(|err| {
-                error!("Cannot fetch questions from DB. {}", err);
-                Error::DatabaseError(format!("Cannot fetch questions from DB. {}", err))
-            })?
-            .ok_or_else(|| {
-                error!("Empty question result");
-                Error::DatabaseError("Empty question result".to_string())
-            })?;
+            .await?
+            .ok_or_else(|| Error("Empty question result".to_string()))?;
         Self::parse_question_result(quiz)
     }
 
@@ -124,8 +113,7 @@ impl GameHandler {
                     .to_owned(),
             )
             .exec(db)
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot insert quiz. {}", err)))?;
+            .await?;
         Ok(())
     }
 }

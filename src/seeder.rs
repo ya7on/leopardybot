@@ -1,6 +1,6 @@
 use crate::conf::get_config;
 use crate::entities::quiz;
-use crate::error::{Error, Result};
+use crate::error::Result;
 use crate::game::base::GameHandler;
 use sea_orm::{DatabaseConnection, Set};
 use serde::Deserialize;
@@ -20,19 +20,10 @@ pub struct CsvQuizRow {
 async fn read_csv(dest: &String) -> Result<Vec<u8>> {
     if dest.starts_with("http") {
         Ok(Vec::from(
-            reqwest::get(dest)
-                .await
-                .map_err(|err| Error::SerializationError(format!("Cannot read file url. {}", err)))?
-                .text()
-                .await
-                .map_err(|err| {
-                    Error::SerializationError(format!("Cannot read response text. {}", err))
-                })?
-                .as_bytes(),
+            reqwest::get(dest).await?.text().await?.as_bytes(),
         ))
     } else {
-        Ok(std::fs::read(dest)
-            .map_err(|err| Error::SerializationError(format!("Cannot read file path. {}", err)))?)
+        Ok(std::fs::read(dest)?)
     }
 }
 
@@ -47,8 +38,7 @@ pub async fn run(db: DatabaseConnection) -> Result<()> {
         .from_reader(file.as_slice());
     let mut questions = Vec::new();
     for record in reader.deserialize::<CsvQuizRow>() {
-        let record = record
-            .map_err(|err| Error::SerializationError(format!("Cannot parse csv row. {}", err)))?;
+        let record = record?;
         questions.push(quiz::ActiveModel {
             id: Set(record.id as i32),
             text: Set(record.question),

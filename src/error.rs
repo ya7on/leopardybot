@@ -1,15 +1,12 @@
-use thiserror::Error as ThisError;
+use std::fmt::Display;
 
 pub type Result<R, E = Error> = std::result::Result<R, E>;
 
-#[derive(ThisError, Debug)]
-pub enum Error {
-    #[error("Storage error. {0}")]
-    ConnectionError(String),
-    #[error("Database error. {0}")]
-    DatabaseError(String),
-    #[error("Serialization error. {0}")]
-    SerializationError(String),
-    #[error("Uncategorized error. {0}")]
-    UncategorizedError(String),
+#[derive(Debug)]
+pub struct Error(pub String);
+
+impl<T: Display + Send + Sync> From<T> for Error {
+    fn from(err: T) -> Self {
+        Self(err.to_string())
+    }
 }

@@ -14,8 +14,7 @@ impl GameHandler {
                     .add(<player::Entity as EntityTrait>::Column::TelegramId.eq(id as i32)),
             )
             .one(db)
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot fetch player. {}", err)))?
+            .await?
         {
             Ok(player)
         } else {
@@ -24,8 +23,7 @@ impl GameHandler {
                 ..Default::default()
             }
             .insert(db)
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot insert player. {}", err)))?)
+            .await?)
         }
     }
 
@@ -34,29 +32,20 @@ impl GameHandler {
         player_id: isize,
         score: isize,
     ) -> Result<()> {
-        let txn = db
-            .begin()
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot begin transaction. {}", err)))?;
+        let txn = db.begin().await?;
         let player = <player::Entity as EntityTrait>::find()
             .filter(
                 Condition::all()
                     .add(<player::Entity as EntityTrait>::Column::TelegramId.eq(player_id as i32)),
             )
             .one(&txn)
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot fetch player. {}", err)))?
-            .ok_or_else(|| Error::DatabaseError("Cannot find user model".to_string()))?;
+            .await?
+            .ok_or_else(|| Error("Cannot find user model".to_string()))?;
         let old_score = player.score;
         let mut player_active_model: player::ActiveModel = player.into();
         player_active_model.score = Set(old_score + score as i32);
-        player_active_model
-            .update(&txn)
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot update user model. {}", err)))?;
-        txn.commit()
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot commit transaction. {}", err)))?;
+        player_active_model.update(&txn).await?;
+        txn.commit().await?;
         Ok(())
     }
 }

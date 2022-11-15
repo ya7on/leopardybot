@@ -20,8 +20,7 @@ impl GameHandler {
                     .add(<game::Entity as EntityTrait>::Column::Active.eq(true)),
             )
             .count(db)
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot count games. {}", err)))?;
+            .await?;
         Ok(count > 0)
     }
 
@@ -37,8 +36,7 @@ impl GameHandler {
             ..Default::default()
         }
         .insert(db)
-        .await
-        .map_err(|err| Error::DatabaseError(format!("Cannot insert game. {}", err)))?;
+        .await?;
         Ok(Self { model: g })
     }
 
@@ -50,9 +48,8 @@ impl GameHandler {
                     .add(<game::Entity as EntityTrait>::Column::Active.eq(true)),
             )
             .one(db)
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot count games. {}", err)))?
-            .ok_or_else(|| Error::DatabaseError(format!("Cannot fetch game with id {}", id)))?;
+            .await?
+            .ok_or_else(|| Error(format!("Cannot fetch game with id {}", id)))?;
         Ok(Self { model: g })
     }
 
@@ -65,11 +62,8 @@ impl GameHandler {
                     .add(<game::Entity as EntityTrait>::Column::Active.eq(true)),
             )
             .one(db)
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot count games. {}", err)))?
-            .ok_or_else(|| {
-                Error::DatabaseError(format!("Cannot fetch game with chat id {}", chat_id))
-            })?;
+            .await?
+            .ok_or_else(|| Error(format!("Cannot fetch game with chat id {}", chat_id)))?;
 
         Ok(Self { model: g })
     }
@@ -85,8 +79,7 @@ impl GameHandler {
                 Expr::value(false),
             )
             .exec(db)
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot update game. {}", err)))?;
+            .await?;
         Ok(())
     }
 

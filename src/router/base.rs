@@ -1,4 +1,4 @@
-use crate::error::{Error, Result};
+use crate::error::Result;
 use crate::telebot::client::Client;
 use crate::telebot::typings::input::Update;
 use crate::telebot::typings::output::{BotCommand, ChatType, Message};
@@ -72,8 +72,7 @@ impl RouteMatch {
 
         fn check_command(message: &Message, expected_command: &String) -> Result<bool> {
             if let Some(text) = &message.text {
-                let re = Regex::new(r"(/[a-zA-Z0-9_]+)(@.+)?")
-                    .map_err(|err| Error::SerializationError(format!("Invalid regex. {}", err)))?;
+                let re = Regex::new(r"(/[a-zA-Z0-9_]+)(@.+)?")?;
                 if let Some(command) = re.captures(text).map(|c| c[1].to_string()) {
                     return Ok(command == *expected_command);
                 }

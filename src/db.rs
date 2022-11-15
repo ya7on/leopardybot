@@ -6,15 +6,12 @@ use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 pub async fn create_db() -> Result<DatabaseConnection> {
     info!("Connection to Database");
     let c = get_config();
-    let opt = ConnectOptions::new(c.db.clone());
-    let db = Database::connect(opt).await.map_err(|err| {
-        Error::DatabaseError(format!("Cannot create database connection. {}", err))
-    })?;
+    let mut opt = ConnectOptions::new(c.db.clone());
+    opt.sqlx_logging(false);
+    let db = Database::connect(opt).await?;
 
     info!("Running migrations");
-    Migrator::up(&db, None)
-        .await
-        .map_err(|err| Error::DatabaseError(format!("Cannot run migrations. {}", err)))?;
+    Migrator::up(&db, None).await?;
 
     Ok(db)
 }
@@ -24,8 +21,6 @@ pub fn clone_db(db: &DatabaseConnection) -> Result<DatabaseConnection> {
         DatabaseConnection::SqlxPostgresPoolConnection(pool) => {
             Ok(DatabaseConnection::SqlxPostgresPoolConnection(pool.clone()))
         }
-        _ => Err(Error::DatabaseError(
-            "Cannot clone DatabaseConnection".to_owned(),
-        )),
+        _ => Err(Error("Cannot clone DatabaseConnection".to_owned())),
     }
 }

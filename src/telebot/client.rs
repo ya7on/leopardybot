@@ -1,4 +1,4 @@
-use crate::error::{Error, Result};
+use crate::error::Result;
 use crate::telebot::typings::output::{BotCommand, Message};
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
@@ -57,15 +57,8 @@ impl Client {
             ))
             .form(&form)
             .send()
-            .await
-            .map_err(|err| {
-                error!("Connection error: {}", err);
-                Error::ConnectionError(format!("Connection error: {}", err))
-            })?;
-        response.json().await.map_err(|err| {
-            error!("Cannot parse Telegram API response: {:?}", err);
-            Error::SerializationError(format!("Cannot parse Telegram API response: {:?}", err))
-        })
+            .await?;
+        Ok(response.json().await?)
     }
 
     // pub(crate) async fn get_webhook_info(
@@ -106,15 +99,7 @@ impl Client {
             .execute(
                 "setMyCommands",
                 &[
-                    (
-                        "commands",
-                        serde_json::to_string(&commands).map_err(|err| {
-                            Error::SerializationError(format!(
-                                "Cannot serialize commands list. {}",
-                                err
-                            ))
-                        })?,
-                    ),
+                    ("commands", serde_json::to_string(&commands)?),
                     ("scope", format!(r#"{{"type": "{}"}}"#, scope)),
                 ],
             )
@@ -153,16 +138,7 @@ impl Client {
         let mut form = vec![
             ("chat_id", chat_id.to_string()),
             ("question", question.to_string()),
-            (
-                "options",
-                serde_json::to_string(options).map_err(|err| {
-                    error!("Cannot convert options to json array. {}", err);
-                    Error::SerializationError(format!(
-                        "Cannot convert options to json array. {}",
-                        err
-                    ))
-                })?,
-            ),
+            ("options", serde_json::to_string(options)?),
             ("is_anonymous", "false".to_string()),
             ("type", "quiz".to_string()),
             ("correct_option_id", correct_option_id.to_string()),

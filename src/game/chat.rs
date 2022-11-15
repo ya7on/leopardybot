@@ -1,5 +1,5 @@
 use crate::entities::chat;
-use crate::error::{Error, Result};
+use crate::error::Result;
 use crate::game::base::GameHandler;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, EntityTrait, PaginatorTrait,
@@ -14,18 +14,16 @@ impl GameHandler {
                 Condition::all().add(<chat::Entity as EntityTrait>::Column::Id.eq(chat_id as i64)),
             )
             .count(db)
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot count chats. {}", err)))?;
-        return if chat_count > 0 {
+            .await?;
+        if chat_count > 0 {
             Ok(false)
         } else {
             chat::ActiveModel {
                 id: Set(chat_id as i64),
             }
             .insert(db)
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot insert chat. {}", err)))?;
+            .await?;
             Ok(true)
-        };
+        }
     }
 }
