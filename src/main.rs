@@ -10,16 +10,12 @@ use leopardybot::router::restart::RestartCommand;
 use leopardybot::router::start::StartCommand;
 use leopardybot::telebot::client::Client;
 use leopardybot::{job, seeder, server};
+use tracing_subscriber::EnvFilter;
 
 #[actix_web::main]
 async fn main() -> Result<()> {
-    env_logger::Builder::from_default_env()
-        .filter_module("sqlx", log::LevelFilter::Error)
-        .filter_module("hyper", log::LevelFilter::Error)
-        .filter_module("sea_orm_migration", log::LevelFilter::Error)
-        .filter_module("reqwest", log::LevelFilter::Error)
-        .filter_module("actix_server", log::LevelFilter::Error)
-        .filter_module("actix_web", log::LevelFilter::Error)
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
         .init();
 
     let c = get_config();

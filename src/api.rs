@@ -4,6 +4,7 @@ use crate::telebot::typings::input::Update;
 use actix_web::web::Json;
 use actix_web::{web, HttpRequest, HttpResponse};
 use sea_orm::DatabaseConnection;
+use tracing::Level;
 
 const TELEGRAM_SECRET_TOKEN_HEADER: &str = "X-Telegram-Bot-Api-Secret-Token";
 
@@ -27,6 +28,13 @@ pub async fn handler(
         error!("Invalid secret token");
         return HttpResponse::Unauthorized().finish();
     }
+
+    let span = span!(
+        Level::DEBUG,
+        "api",
+        request_id = uuid::Uuid::new_v4().to_string()
+    );
+    let _enter = span.enter();
 
     debug!("Update: {:?}", update);
 
