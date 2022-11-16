@@ -1,4 +1,6 @@
-# Leopardy - Телеграм бот для игры викторин
+# Leopardy - Телеграм бот для игры в викторины
+
+[![checks](https://img.shields.io/github/checks-status/ya7on/leopardybot/master)](https://github.com/ya7on/leopardybot/actions)
 
 ![image](https://user-images.githubusercontent.com/7967826/200128044-44605293-c188-422a-af1a-9609113b0f36.png)
 
