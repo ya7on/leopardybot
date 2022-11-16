@@ -21,6 +21,7 @@ impl RouteHandler for PlaySingleCommand {
         if let Some(message) = &update.message {
             if let Some(user) = &message.from {
                 GameHandler::register_chat(db, message.chat.id).await?;
+                GameHandler::get_or_create_player(db, user.id).await?;
 
                 if !GameHandler::exists(db, message.chat.id).await? {
                     let game =
