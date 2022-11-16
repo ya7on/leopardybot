@@ -7,6 +7,7 @@ use crate::texts::TextFormatter;
 use actix_rt::time;
 use sea_orm::DatabaseConnection;
 use std::time::Duration;
+use tracing::Level;
 
 pub async fn run(db: DatabaseConnection, client: Client) {
     let c = get_config();
@@ -18,6 +19,14 @@ pub async fn run(db: DatabaseConnection, client: Client) {
             let result: Result<()> = async {
                 let polls = GameHandler::get_unhandled_polls(&db).await?;
                 for poll in polls.iter() {
+                    let span = span!(
+                        Level::DEBUG,
+                        "job",
+                        game_id = poll.game_id,
+                        poll_id = poll.id,
+                    );
+                    let _enter = span.enter();
+
                     let game = GameHandler::get_by_id(&db, poll.game_id as usize).await?;
                     if game.model.game_mode == Gamemodes::Multiplayer {
                         let chat_id = game.model.chat_id;
@@ -61,12 +70,12 @@ pub async fn run(db: DatabaseConnection, client: Client) {
                             .await?;
                         let result = response.result.ok_or_else(|| {
                             // FIXME error handle
-                            Error::SerializationError("Empty result field".to_string())
+                            Error("Empty result field".to_string())
                         })?;
                         GameHandler::mark_poll_as_handled(&db, poll.id.clone()).await?;
-                        let poll = result.poll.ok_or_else(|| {
-                            Error::SerializationError("Empty poll field".to_string())
-                        })?;
+                        let poll = result
+                            .poll
+                            .ok_or_else(|| Error("Empty poll field".to_string()))?;
                         game.register_poll(&db, &poll, result.message_id).await?;
                     }
                 }

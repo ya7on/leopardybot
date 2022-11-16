@@ -1,5 +1,5 @@
 use crate::entities::player_poll_answer;
-use crate::error::{Error, Result};
+use crate::error::Result;
 use crate::game::base::GameHandler;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
 
@@ -16,8 +16,7 @@ impl GameHandler {
             is_correct: Set(is_correct),
         }
         .insert(db)
-        .await
-        .map_err(|err| Error::DatabaseError(format!("Cannot insert user_poll_answer. {}", err)))?;
+        .await?;
         Ok(())
     }
 }

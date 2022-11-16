@@ -1,5 +1,5 @@
 use crate::entities::player_played_quiz;
-use crate::error::{Error, Result};
+use crate::error::Result;
 use crate::game::base::GameHandler;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
 
@@ -14,10 +14,7 @@ impl GameHandler {
             quiz_id: Set(quiz_id as i32),
         }
         .insert(db)
-        .await
-        .map_err(|err| {
-            Error::DatabaseError(format!("Cannot insert player_played_quiz. {}", err))
-        })?;
+        .await?;
         Ok(())
     }
 }

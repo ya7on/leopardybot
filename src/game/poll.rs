@@ -22,28 +22,26 @@ impl GameHandler {
             game_id: Set(self.model.id as i32),
             correct_option_id: Set(tg_poll
                 .correct_option_id
-                .ok_or_else(|| Error::SerializationError("TODO".to_string()))?
+                .ok_or_else(|| Error("TODO".to_string()))?
                 as i32),
             close_date: Set(tg_poll.close_date.map(|cd| cd as i32)),
             ..Default::default()
         }
         .insert(db)
-        .await
-        .map_err(|err| Error::DatabaseError(format!("Cannot insert poll. {}", err)))?;
+        .await?;
         Ok(())
     }
 
     pub async fn get_unhandled_polls(db: &DatabaseConnection) -> Result<Vec<poll::Model>> {
         let now = Utc::now().timestamp();
-        <poll::Entity as EntityTrait>::find()
+        Ok(<poll::Entity as EntityTrait>::find()
             .filter(
                 Condition::all()
                     .add(<poll::Entity as EntityTrait>::Column::CloseDate.lt(now))
                     .add(<poll::Entity as EntityTrait>::Column::Handled.eq(false)),
             )
             .all(db)
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot fetch polls. {}", err)))
+            .await?)
     }
 
     pub async fn mark_poll_as_handled(db: &DatabaseConnection, poll_id: String) -> Result<()> {
@@ -54,40 +52,36 @@ impl GameHandler {
                 Expr::value(true),
             )
             .exec(db)
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot update poll. {}", err)))?;
+            .await?;
         Ok(())
     }
 
     pub async fn get_rounds(&self, db: &DatabaseConnection) -> Result<usize> {
-        <poll::Entity as EntityTrait>::find()
+        Ok(<poll::Entity as EntityTrait>::find()
             .filter(
                 Condition::all()
                     .add(<poll::Entity as EntityTrait>::Column::GameId.eq(self.model.id)),
             )
             .count(db)
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot update poll. {}", err)))
+            .await?)
     }
 
     pub async fn get_poll(db: &DatabaseConnection, poll_id: String) -> Result<poll::Model> {
         <poll::Entity as EntityTrait>::find()
             .filter(Condition::all().add(<poll::Entity as EntityTrait>::Column::Id.eq(poll_id)))
             .one(db)
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot update poll. {}", err)))?
-            .ok_or_else(|| Error::DatabaseError("Cannot find poll".to_string()))
+            .await?
+            .ok_or_else(|| Error("Cannot find poll".to_string()))
     }
 
     pub async fn get_active_polls(&self, db: &DatabaseConnection) -> Result<Vec<poll::Model>> {
-        <poll::Entity as EntityTrait>::find()
+        Ok(<poll::Entity as EntityTrait>::find()
             .filter(
                 Condition::all()
                     .add(<poll::Entity as EntityTrait>::Column::GameId.eq(self.model.id))
                     .add(<poll::Entity as EntityTrait>::Column::Handled.eq(false)),
             )
             .all(db)
-            .await
-            .map_err(|err| Error::DatabaseError(format!("Cannot get active poll. {}", err)))
+            .await?)
     }
 }

@@ -1,6 +1,6 @@
 use leopardybot::conf::get_config;
 use leopardybot::db::{clone_db, create_db};
-use leopardybot::error::{Error, Result};
+use leopardybot::error::Result;
 use leopardybot::router::base::{CommandScope, RouteCfg, RouteMatch, Router};
 use leopardybot::router::help::HelpCommand;
 use leopardybot::router::play_group::PlayGroupCommand;
@@ -10,11 +10,12 @@ use leopardybot::router::restart::RestartCommand;
 use leopardybot::router::start::StartCommand;
 use leopardybot::telebot::client::Client;
 use leopardybot::{job, seeder, server};
+use tracing_subscriber::EnvFilter;
 
 #[actix_web::main]
 async fn main() -> Result<()> {
-    env_logger::Builder::from_default_env()
-        .filter_module("sqlx::query", log::LevelFilter::Error)
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
         .init();
 
     let c = get_config();
@@ -93,8 +94,6 @@ async fn main() -> Result<()> {
 
     seeder::run(clone_db(&db)?).await?;
     job::run(clone_db(&db)?, client.clone()).await;
-    server::run(db, client, router)
-        .await
-        .map_err(|err| Error::UncategorizedError(format!("Cannot run server. {}", err)))?;
+    server::run(db, client, router).await?;
     Ok(())
 }

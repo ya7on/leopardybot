@@ -43,11 +43,11 @@ impl RouteHandler for PlayGroupCommand {
                     .await?;
                 let result = response.result.ok_or_else(|| {
                     // FIXME error handle
-                    Error::SerializationError("Empty result field".to_owned())
+                    Error("Empty result field".to_owned())
                 })?;
                 let poll = result
                     .poll
-                    .ok_or_else(|| Error::SerializationError("Empty poll field".to_owned()))?;
+                    .ok_or_else(|| Error("Empty poll field".to_owned()))?;
                 game.register_poll(db, &poll, result.message_id).await?;
             } else {
                 client
