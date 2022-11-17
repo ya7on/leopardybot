@@ -13,4 +13,4 @@ jobs:
         run: curl -Os https://uploader.codecov.io/latest/linux/codecov
       - run: chmod +x codecov
       - name: Codecov
-        run: ./codecov
+        run: ./codecov -t ${CODECOV_TOKEN}
