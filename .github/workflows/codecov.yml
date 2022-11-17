@@ -1,0 +1,16 @@
+on: push
+name: Cargo test
+env:
+  CARGO_TERM_COLORS: always
+
+jobs:
+  codecov:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install codecov
+        run: curl -Os https://uploader.codecov.io/latest/linux/codecov
+      - run: chmod +x codecov
+      - name: Codecov
+        run: ./codecov
