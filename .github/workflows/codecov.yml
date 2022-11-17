@@ -1,5 +1,5 @@
 on: push
-name: Cargo test
+name: Codecov
 env:
   CARGO_TERM_COLORS: always
 
@@ -9,8 +9,5 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Install codecov
-        run: curl -Os https://uploader.codecov.io/latest/linux/codecov
-      - run: chmod +x codecov
-      - name: Codecov
-        run: ./codecov -t ${CODECOV_TOKEN}
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
