@@ -1,4 +1,4 @@
-use crate::error::Result;
+use crate::error::{Error, Result};
 use crate::router::base::RouteHandler;
 use crate::telebot::client::Client;
 use crate::telebot::typings::input::Update;
@@ -11,11 +11,15 @@ pub struct StartCommand;
 #[async_trait::async_trait]
 impl RouteHandler for StartCommand {
     async fn handle(&self, _: &DatabaseConnection, client: &Client, update: &Update) -> Result<()> {
-        if let Some(message) = &update.message {
-            client
-                .send_message(message.chat.id, &TextFormatter::start()?)
-                .await?;
-        }
+        let message = update
+            .message
+            .as_ref()
+            .ok_or_else(|| Error(format!("Invalid request. Missing message. {:?}", update)))?;
+
+        client
+            .send_message(message.chat.id, &TextFormatter::start()?)
+            .await?;
+
         Ok(())
     }
 }

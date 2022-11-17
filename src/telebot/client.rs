@@ -1,7 +1,8 @@
-use crate::error::Result;
+use crate::error::{Error, Result};
 use crate::telebot::typings::output::{BotCommand, Message};
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
+use std::fmt::Debug;
 use uuid::Uuid;
 
 #[derive(Deserialize, Debug)]
@@ -10,6 +11,18 @@ pub struct JsonResponse<R> {
     pub result: Option<R>,
     pub error_code: Option<usize>,
     pub description: Option<String>,
+}
+
+impl<R: Debug> JsonResponse<R> {
+    pub(crate) fn into_result(self) -> Result<R> {
+        let err = format!("{:?}", self);
+        match self.ok {
+            true => self
+                .result
+                .ok_or_else(|| Error(format!("Empty result field. {:?}", err))),
+            false => Err(Error(format!("Telegram API error. {:?}", self))),
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -44,11 +57,11 @@ impl Client {
         self.secret_token == token
     }
 
-    pub(super) async fn execute<R: DeserializeOwned>(
+    pub(super) async fn execute<R: Debug + DeserializeOwned>(
         &self,
         method: &str,
         form: &[(&str, String)],
-    ) -> Result<JsonResponse<R>> {
+    ) -> Result<R> {
         let response = self
             .client
             .post(format!(
@@ -58,24 +71,10 @@ impl Client {
             .form(&form)
             .send()
             .await?;
-        Ok(response.json().await?)
+        response.json::<JsonResponse<R>>().await?.into_result()
     }
 
-    // pub(crate) async fn get_webhook_info(
-    //     &self,
-    // ) -> Result<JsonResponse<telebot::typings::output::WebhookInfo>> {
-    //     let response = self
-    //         .execute::<telebot::typings::output::WebhookInfo>("getWebhookInfo", &[])
-    //         .await;
-    //     debug!("get_webhook_info: {:?}", response);
-    //     response
-    // }
-
-    pub(crate) async fn set_webhook_info(
-        &self,
-        url: &str,
-        max_connections: u8,
-    ) -> Result<JsonResponse<bool>> {
+    pub(crate) async fn set_webhook_info(&self, url: &str, max_connections: u8) -> Result<bool> {
         let response = self
             .execute(
                 "setWebhook",
@@ -90,11 +89,7 @@ impl Client {
         response
     }
 
-    pub async fn set_my_commands(
-        &self,
-        commands: Vec<BotCommand>,
-        scope: &str,
-    ) -> Result<JsonResponse<bool>> {
+    pub async fn set_my_commands(&self, commands: Vec<BotCommand>, scope: &str) -> Result<bool> {
         let response = self
             .execute(
                 "setMyCommands",
@@ -108,11 +103,7 @@ impl Client {
         response
     }
 
-    pub(crate) async fn send_message(
-        &self,
-        chat_id: isize,
-        text: &str,
-    ) -> Result<JsonResponse<Message>> {
+    pub(crate) async fn send_message(&self, chat_id: isize, text: &str) -> Result<Message> {
         let response = self
             .execute(
                 "sendMessage",
@@ -134,7 +125,7 @@ impl Client {
         options: &Vec<String>,
         correct_option_id: usize,
         open_period: Option<u16>,
-    ) -> Result<JsonResponse<Message>> {
+    ) -> Result<Message> {
         let mut form = vec![
             ("chat_id", chat_id.to_string()),
             ("question", question.to_string()),
@@ -152,11 +143,7 @@ impl Client {
         response
     }
 
-    pub(crate) async fn delete_message(
-        &self,
-        chat_id: isize,
-        message_id: usize,
-    ) -> Result<JsonResponse<bool>> {
+    pub(crate) async fn delete_message(&self, chat_id: isize, message_id: usize) -> Result<bool> {
         let response = self
             .execute(
                 "deleteMessage",

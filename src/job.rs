@@ -32,10 +32,10 @@ pub async fn run(db: DatabaseConnection, client: Client) {
                         let chat_id = game.model.chat_id;
                         let round_number = game.get_rounds(&db).await?;
                         if round_number >= c.quiz_rounds_count as usize {
-                            let send_message_result = client
+                            if let Err(_) = client
                                 .send_message(chat_id as isize, &TextFormatter::game_over()?)
-                                .await?;
-                            if !send_message_result.ok {
+                                .await
+                            {
                                 error!("Cannot send message"); // TODO #22
                                 game.end_game(&db).await?;
                                 GameHandler::mark_poll_as_handled(&db, poll.id.clone()).await?;
@@ -44,10 +44,10 @@ pub async fn run(db: DatabaseConnection, client: Client) {
                             GameHandler::mark_poll_as_handled(&db, poll.id.clone()).await?;
                             return Ok(());
                         }
-                        let send_message_result = client
+                        if let Err(_) = client
                             .send_message(chat_id as isize, &TextFormatter::round_over()?)
-                            .await?;
-                        if !send_message_result.ok {
+                            .await
+                        {
                             error!("Cannot send message"); // TODO #22
                             game.end_game(&db).await?;
                             GameHandler::mark_poll_as_handled(&db, poll.id.clone()).await?;
@@ -68,15 +68,11 @@ pub async fn run(db: DatabaseConnection, client: Client) {
                                 Some(c.quiz_round_time),
                             )
                             .await?;
-                        let result = response.result.ok_or_else(|| {
-                            // FIXME error handle
-                            Error("Empty result field".to_string())
-                        })?;
                         GameHandler::mark_poll_as_handled(&db, poll.id.clone()).await?;
-                        let poll = result
+                        let poll = response
                             .poll
                             .ok_or_else(|| Error("Empty poll field".to_string()))?;
-                        game.register_poll(&db, &poll, result.message_id).await?;
+                        game.register_poll(&db, &poll, response.message_id).await?;
                     }
                 }
                 Ok(())
