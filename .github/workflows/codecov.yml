@@ -9,5 +9,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: rust-grcov
+        uses: actions-rs/grcov@v0.1.5
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
+        with:
+          verbose: true
+          fail_ci_if_error: true
