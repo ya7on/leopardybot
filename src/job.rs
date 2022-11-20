@@ -64,6 +64,7 @@ pub async fn run(db: DatabaseConnection, client: Client) {
                                 chat_id as isize,
                                 &question.text,
                                 &question.options.iter().map(|i| i.text.clone()).collect(),
+                                question.explanation,
                                 question.correct_answer_id,
                                 Some(c.quiz_round_time),
                             )

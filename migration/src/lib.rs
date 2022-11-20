@@ -7,6 +7,7 @@ mod m20221030_193210_game;
 mod m20221031_205134_poll;
 mod m20221105_213042_user_poll_answer;
 mod m20221113_203803_user_quiz;
+mod m20221120_221515_quiz_explanation;
 
 pub mod idens;
 
@@ -23,6 +24,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20221031_205134_poll::Migration),
             Box::new(m20221105_213042_user_poll_answer::Migration),
             Box::new(m20221113_203803_user_quiz::Migration),
+            Box::new(m20221120_221515_quiz_explanation::Migration),
         ]
     }
 }

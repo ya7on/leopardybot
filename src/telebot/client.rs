@@ -123,6 +123,7 @@ impl Client {
         chat_id: isize,
         question: &String,
         options: &Vec<String>,
+        explanation: Option<String>,
         correct_option_id: usize,
         open_period: Option<u16>,
     ) -> Result<Message> {
@@ -135,6 +136,9 @@ impl Client {
             ("correct_option_id", correct_option_id.to_string()),
             ("protect_content", true.to_string()),
         ];
+        if let Some(explanation) = explanation {
+            form.push(("explanation", explanation));
+        }
         if let Some(open_period) = open_period {
             form.push(("open_period", open_period.to_string()));
         }
