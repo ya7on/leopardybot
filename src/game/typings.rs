@@ -8,4 +8,5 @@ pub struct QuizPoll {
     pub text: String,
     pub options: Vec<QuizPollOption>,
     pub correct_answer_id: usize,
+    pub explanation: Option<String>,
 }

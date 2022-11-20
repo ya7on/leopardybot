@@ -14,6 +14,7 @@ pub struct CsvQuizRow {
     answer_2: String,
     answer_3: String,
     answer_4: String,
+    explanation: Option<String>,
 }
 
 // FIXME
@@ -39,6 +40,11 @@ pub async fn run(db: DatabaseConnection) -> Result<()> {
     let mut questions = Vec::new();
     for record in reader.deserialize::<CsvQuizRow>() {
         let record = record?;
+        if let Some(explanation) = &record.explanation {
+            if explanation.len() > 200 {
+                panic!("Explanation max len is 200. {:?}", record);
+            }
+        }
         questions.push(quiz::ActiveModel {
             id: Set(record.id as i32),
             text: Set(record.question),
@@ -46,6 +52,7 @@ pub async fn run(db: DatabaseConnection) -> Result<()> {
             option2: Set(record.answer_2),
             option3: Set(record.answer_3),
             option4: Set(record.answer_4),
+            explanation: Set(record.explanation),
         })
     }
     for to_insert in questions.chunks(100) {

@@ -56,6 +56,7 @@ impl RouteHandler for RestartCommand {
                     message.chat.id,
                     &question.text,
                     &question.options.iter().map(|i| i.text.clone()).collect(),
+                    question.explanation,
                     question.correct_answer_id,
                     None,
                 )

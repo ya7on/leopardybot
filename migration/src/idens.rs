@@ -16,6 +16,7 @@ pub enum Quiz {
     Option2,
     Option3,
     Option4,
+    Explanation,
 }
 
 #[derive(Iden)]

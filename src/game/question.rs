@@ -38,6 +38,7 @@ impl GameHandler {
             text: quiz_model.text,
             options,
             correct_answer_id,
+            explanation: quiz_model.explanation,
         })
     }
 
@@ -109,6 +110,7 @@ impl GameHandler {
                         <quiz::Entity as EntityTrait>::Column::Option2,
                         <quiz::Entity as EntityTrait>::Column::Option3,
                         <quiz::Entity as EntityTrait>::Column::Option4,
+                        <quiz::Entity as EntityTrait>::Column::Explanation,
                     ])
                     .to_owned(),
             )

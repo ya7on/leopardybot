@@ -72,6 +72,7 @@ impl RouteHandler for PollAnswerHandler {
                     game.model.chat_id as isize,
                     &question.text,
                     &question.options.iter().map(|i| i.text.clone()).collect(),
+                    question.explanation,
                     question.correct_answer_id,
                     None,
                 )
