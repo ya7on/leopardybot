@@ -39,9 +39,59 @@ pub async fn run(db: DatabaseConnection) -> Result<()> {
         .from_reader(file.as_slice());
     let mut questions = Vec::new();
     for record in reader.deserialize::<CsvQuizRow>() {
-        let record = record?;
+        let mut record = record?;
+
+        record.question = record.question.trim().to_owned();
+        record.correct_answer = record.correct_answer.trim().to_owned();
+        record.answer_2 = record.answer_2.trim().to_owned();
+        record.answer_3 = record.answer_3.trim().to_owned();
+        record.answer_4 = record.answer_4.trim().to_owned();
+        record.explanation = record.explanation.and_then(|expl| {
+            let expl = expl.trim().to_owned();
+            if expl.chars().count() > 0 {
+                Some(expl)
+            } else {
+                None
+            }
+        });
+
+        if record.question.is_empty() {
+            panic!("Question should be not empty. {:?}", record);
+        }
+        if record.question.chars().count() > 300 {
+            panic!("Question max len is 300. {:?}", record);
+        }
+
+        if record.correct_answer.is_empty() {
+            panic!("Correct answer should be not empty. {:?}", record);
+        }
+        if record.correct_answer.chars().count() > 100 {
+            panic!("Correct answer max len is 300. {:?}", record);
+        }
+
+        if record.answer_2.is_empty() {
+            panic!("Answer 2 should be not empty. {:?}", record);
+        }
+        if record.answer_2.chars().count() > 100 {
+            panic!("Answer 2 max len is 300. {:?}", record);
+        }
+
+        if record.answer_3.is_empty() {
+            panic!("Answer 3 should be not empty. {:?}", record);
+        }
+        if record.answer_3.chars().count() > 100 {
+            panic!("Answer 3 max len is 300. {:?}", record);
+        }
+
+        if record.answer_4.is_empty() {
+            panic!("Answer 4 should be not empty. {:?}", record);
+        }
+        if record.answer_4.chars().count() > 100 {
+            panic!("Answer 4 max len is 300. {:?}", record);
+        }
+
         if let Some(explanation) = &record.explanation {
-            if explanation.len() > 200 {
+            if explanation.chars().count() > 200 {
                 panic!("Explanation max len is 200. {:?}", record);
             }
         }
