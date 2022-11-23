@@ -39,7 +39,21 @@ pub async fn run(db: DatabaseConnection) -> Result<()> {
         .from_reader(file.as_slice());
     let mut questions = Vec::new();
     for record in reader.deserialize::<CsvQuizRow>() {
-        let record = record?;
+        let mut record = record?;
+
+        record.question = record.question.trim().to_owned();
+        record.correct_answer = record.correct_answer.trim().to_owned();
+        record.answer_2 = record.answer_2.trim().to_owned();
+        record.answer_3 = record.answer_3.trim().to_owned();
+        record.answer_4 = record.answer_4.trim().to_owned();
+        record.explanation = record.explanation.and_then(|expl| {
+            let expl = expl.trim().to_owned();
+            if expl.chars().count() > 0 {
+                Some(expl)
+            } else {
+                None
+            }
+        });
 
         if record.question.is_empty() {
             panic!("Question should be not empty. {:?}", record);
