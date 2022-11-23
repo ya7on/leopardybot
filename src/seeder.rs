@@ -40,8 +40,44 @@ pub async fn run(db: DatabaseConnection) -> Result<()> {
     let mut questions = Vec::new();
     for record in reader.deserialize::<CsvQuizRow>() {
         let record = record?;
+
+        if record.question.is_empty() {
+            panic!("Question should be not empty. {:?}", record);
+        }
+        if record.question.chars().count() > 300 {
+            panic!("Question max len is 300. {:?}", record);
+        }
+
+        if record.correct_answer.is_empty() {
+            panic!("Correct answer should be not empty. {:?}", record);
+        }
+        if record.correct_answer.chars().count() > 100 {
+            panic!("Correct answer max len is 300. {:?}", record);
+        }
+
+        if record.answer_2.is_empty() {
+            panic!("Answer 2 should be not empty. {:?}", record);
+        }
+        if record.answer_2.chars().count() > 100 {
+            panic!("Answer 2 max len is 300. {:?}", record);
+        }
+
+        if record.answer_3.is_empty() {
+            panic!("Answer 3 should be not empty. {:?}", record);
+        }
+        if record.answer_3.chars().count() > 100 {
+            panic!("Answer 3 max len is 300. {:?}", record);
+        }
+
+        if record.answer_4.is_empty() {
+            panic!("Answer 4 should be not empty. {:?}", record);
+        }
+        if record.answer_4.chars().count() > 100 {
+            panic!("Answer 4 max len is 300. {:?}", record);
+        }
+
         if let Some(explanation) = &record.explanation {
-            if explanation.len() > 200 {
+            if explanation.chars().count() > 200 {
                 panic!("Explanation max len is 200. {:?}", record);
             }
         }
